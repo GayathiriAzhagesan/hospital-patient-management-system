@@ -4,13 +4,13 @@ import {
   LayoutDashboard, Users, CalendarDays, Stethoscope, Receipt, Activity,
 } from "lucide-react";
 
-const nav = [
+const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/patients", label: "Patients", icon: Users },
   { to: "/appointments", label: "Appointments", icon: CalendarDays },
   { to: "/doctors", label: "Doctors", icon: Stethoscope },
   { to: "/billing", label: "Billing", icon: Receipt },
-] as const;
+];
 
 export function AppShell({ title, subtitle, actions, children }: {
   title: string;
