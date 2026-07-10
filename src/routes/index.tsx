@@ -6,7 +6,7 @@ import { Users, CalendarDays, Stethoscope, Receipt, TrendingUp } from "lucide-re
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — MediCare HMS" },
+      { title: "Dashboard — MediCare Portal" },
       { name: "description", content: "Hospital patient management dashboard with patients, appointments, doctors, and billing overview." },
     ],
   }),

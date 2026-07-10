@@ -77,12 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MediCare HMS — Hospital Patient Management" },
-      { name: "description", content: "Manage patients, appointments, doctors, and billing in one clean hospital management workspace." },
-      { property: "og:title", content: "MediCare HMS — Hospital Patient Management" },
-      { property: "og:description", content: "Patients, appointments, doctors, and billing in one place." },
+      { title: "Dashboard — MediCare Portal" },
+      { name: "description", content: "Hospital patient management dashboard with patients, appointments, doctors, and billing overview." },
+      { property: "og:title", content: "Dashboard — MediCare Portal" },
+      { property: "og:description", content: "Hospital patient management dashboard with patients, appointments, doctors, and billing overview." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Dashboard — MediCare Portal" },
+      { name: "twitter:description", content: "Hospital patient management dashboard with patients, appointments, doctors, and billing overview." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/04424160-0d80-4e55-a19b-b8f5031c2f81/id-preview-4ce3466a--83cf728c-f5f7-4ecc-bfaa-d1dc3e606f99.lovable.app-1783671435517.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/04424160-0d80-4e55-a19b-b8f5031c2f81/id-preview-4ce3466a--83cf728c-f5f7-4ecc-bfaa-d1dc3e606f99.lovable.app-1783671435517.png" },
     ],
     links: [
       {
