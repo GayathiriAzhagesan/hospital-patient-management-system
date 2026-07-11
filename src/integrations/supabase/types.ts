@@ -14,7 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          created_at: string
+          date: string
+          doctor_id: string
+          id: string
+          patient_id: string
+          reason: string | null
+          status: string
+          time: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          doctor_id: string
+          id?: string
+          patient_id: string
+          reason?: string | null
+          status?: string
+          time: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          doctor_id?: string
+          id?: string
+          patient_id?: string
+          reason?: string | null
+          status?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctors: {
+        Row: {
+          created_at: string
+          department: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          shift: string | null
+          specialty: string | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          shift?: string | null
+          specialty?: string | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          shift?: string | null
+          specialty?: string | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          paid: boolean
+          patient_id: string
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          paid?: boolean
+          patient_id: string
+          total?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          paid?: boolean
+          patient_id?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          address: string | null
+          allergies: string | null
+          blood_group: string | null
+          created_at: string
+          created_by: string | null
+          dob: string | null
+          email: string | null
+          first_name: string
+          gender: string | null
+          history: string | null
+          id: string
+          last_name: string
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          allergies?: string | null
+          blood_group?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          email?: string | null
+          first_name: string
+          gender?: string | null
+          history?: string | null
+          id?: string
+          last_name: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          allergies?: string | null
+          blood_group?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          email?: string | null
+          first_name?: string
+          gender?: string | null
+          history?: string | null
+          id?: string
+          last_name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
