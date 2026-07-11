@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, Card, Button, Input, Select, Label, Modal, Badge } from "@/components/AppShell";
-import { db, uid, useHmsData, type Doctor } from "@/lib/hms-store";
+import { uid, useHmsData, useHmsActions, type Doctor } from "@/lib/hms-store";
 import { Plus, Pencil, Trash2, Stethoscope } from "lucide-react";
 
-export const Route = createFileRoute("/doctors")({
+export const Route = createFileRoute("/_authenticated/doctors")({
   head: () => ({
     meta: [
       { title: "Doctors — MediCare HMS" },
@@ -20,6 +20,7 @@ const empty = (): Doctor => ({
 
 function DoctorsPage() {
   const { doctors } = useHmsData();
+  const { saveDoctor, deleteDoctor } = useHmsActions();
   const [editing, setEditing] = useState<Doctor | null>(null);
 
   return (
@@ -50,7 +51,7 @@ function DoctorsPage() {
             </div>
             <div className="mt-4 flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setEditing(d)}><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-              <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Remove ${d.name}?`)) db.deleteDoctor(d.id); }}>
+              <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Remove ${d.name}?`)) deleteDoctor.mutate(d.id); }}>
                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
               </Button>
             </div>
@@ -59,22 +60,29 @@ function DoctorsPage() {
         {doctors.length === 0 && <div className="text-muted-foreground">No doctors yet.</div>}
       </div>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={doctors.find((d) => d.id === editing?.id) ? "Edit Doctor" : "New Doctor"}>
-        {editing && <DocForm doc={editing} onSave={(d) => { db.upsertDoctor(d); setEditing(null); }} onCancel={() => setEditing(null)} />}
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing && !editing.id.startsWith("new-") ? "Edit Doctor" : "New Doctor"}>
+        {editing && (
+          <DocForm
+            doc={editing}
+            busy={saveDoctor.isPending}
+            onSave={(d) => saveDoctor.mutate(d, { onSuccess: () => setEditing(null) })}
+            onCancel={() => setEditing(null)}
+          />
+        )}
       </Modal>
     </AppShell>
   );
 }
 
-function DocForm({ doc, onSave, onCancel }: { doc: Doctor; onSave: (d: Doctor) => void; onCancel: () => void }) {
+function DocForm({ doc, onSave, onCancel, busy }: { doc: Doctor; onSave: (d: Doctor) => void; onCancel: () => void; busy: boolean }) {
   const [f, setF] = useState(doc);
   const set = <K extends keyof Doctor>(k: K, v: Doctor[K]) => setF({ ...f, [k]: v });
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(f); }} className="space-y-3">
       <div><Label>Full name</Label><Input required value={f.name} onChange={(e) => set("name", e.target.value)} /></div>
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Specialty</Label><Input required value={f.specialty} onChange={(e) => set("specialty", e.target.value)} /></div>
-        <div><Label>Department</Label><Input required value={f.department} onChange={(e) => set("department", e.target.value)} /></div>
+        <div><Label>Specialty</Label><Input value={f.specialty} onChange={(e) => set("specialty", e.target.value)} /></div>
+        <div><Label>Department</Label><Input value={f.department} onChange={(e) => set("department", e.target.value)} /></div>
         <div><Label>Phone</Label><Input value={f.phone} onChange={(e) => set("phone", e.target.value)} /></div>
         <div><Label>Email</Label><Input type="email" value={f.email} onChange={(e) => set("email", e.target.value)} /></div>
       </div>
@@ -85,7 +93,7 @@ function DocForm({ doc, onSave, onCancel }: { doc: Doctor; onSave: (d: Doctor) =
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save Doctor</Button>
+        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save Doctor"}</Button>
       </div>
     </form>
   );

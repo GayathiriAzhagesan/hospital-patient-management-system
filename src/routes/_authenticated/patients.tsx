@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, Card, Button, Input, Select, Label, Textarea, Modal, Badge } from "@/components/AppShell";
-import { db, uid, useHmsData, type Patient } from "@/lib/hms-store";
+import { uid, useHmsData, useHmsActions, type Patient } from "@/lib/hms-store";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/patients")({
+export const Route = createFileRoute("/_authenticated/patients")({
   head: () => ({
     meta: [
       { title: "Patients — MediCare HMS" },
@@ -22,6 +22,7 @@ const empty = (): Patient => ({
 
 function PatientsPage() {
   const { patients } = useHmsData();
+  const { savePatient, deletePatient } = useHmsActions();
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Patient | null>(null);
 
@@ -71,7 +72,7 @@ function PatientsPage() {
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex gap-1">
                       <Button variant="ghost" size="sm" onClick={() => setEditing(p)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Delete ${p.firstName}?`)) db.deletePatient(p.id); }}>
+                      <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Delete ${p.firstName}?`)) deletePatient.mutate(p.id); }}>
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </div>
@@ -86,14 +87,21 @@ function PatientsPage() {
         </div>
       </Card>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={patients.find((p) => p.id === editing?.id) ? "Edit Patient" : "New Patient"}>
-        {editing && <PatientForm patient={editing} onSave={(p) => { db.upsertPatient(p); setEditing(null); }} onCancel={() => setEditing(null)} />}
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing && !editing.id.startsWith("new-") ? "Edit Patient" : "New Patient"}>
+        {editing && (
+          <PatientForm
+            patient={editing}
+            busy={savePatient.isPending}
+            onSave={(p) => savePatient.mutate(p, { onSuccess: () => setEditing(null) })}
+            onCancel={() => setEditing(null)}
+          />
+        )}
       </Modal>
     </AppShell>
   );
 }
 
-function PatientForm({ patient, onSave, onCancel }: { patient: Patient; onSave: (p: Patient) => void; onCancel: () => void }) {
+function PatientForm({ patient, onSave, onCancel, busy }: { patient: Patient; onSave: (p: Patient) => void; onCancel: () => void; busy: boolean }) {
   const [f, setF] = useState(patient);
   const set = <K extends keyof Patient>(k: K, v: Patient[K]) => setF({ ...f, [k]: v });
   return (
@@ -101,7 +109,7 @@ function PatientForm({ patient, onSave, onCancel }: { patient: Patient; onSave: 
       <div className="grid grid-cols-2 gap-3">
         <div><Label>First name</Label><Input required value={f.firstName} onChange={(e) => set("firstName", e.target.value)} /></div>
         <div><Label>Last name</Label><Input required value={f.lastName} onChange={(e) => set("lastName", e.target.value)} /></div>
-        <div><Label>Date of birth</Label><Input required type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} /></div>
+        <div><Label>Date of birth</Label><Input type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} /></div>
         <div><Label>Gender</Label>
           <Select value={f.gender} onChange={(e) => set("gender", e.target.value as Patient["gender"])}>
             <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
@@ -121,7 +129,7 @@ function PatientForm({ patient, onSave, onCancel }: { patient: Patient; onSave: 
       <div><Label>Medical history</Label><Textarea value={f.history} onChange={(e) => set("history", e.target.value)} /></div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save Patient</Button>
+        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save Patient"}</Button>
       </div>
     </form>
   );

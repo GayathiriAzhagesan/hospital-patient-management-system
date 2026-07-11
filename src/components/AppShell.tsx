@@ -1,8 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
-  LayoutDashboard, Users, CalendarDays, Stethoscope, Receipt, Activity,
+  LayoutDashboard, Users, CalendarDays, Stethoscope, Receipt, Activity, LogOut,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -59,7 +61,10 @@ export function AppShell({ title, subtitle, actions, children }: {
               <h1 className="text-xl font-semibold">{title}</h1>
               {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             </div>
-            <div className="flex items-center gap-2">{actions}</div>
+            <div className="flex items-center gap-2">
+              {actions}
+              <SignOutButton />
+            </div>
           </div>
           <div className="md:hidden px-3 pb-3 flex gap-1 overflow-x-auto">
             {nav.map((n) => {
