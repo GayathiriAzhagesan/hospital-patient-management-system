@@ -93,6 +93,22 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <div className={`bg-card border rounded-xl shadow-sm ${className}`}>{children}</div>;
 }
 
+function SignOutButton() {
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={async () => {
+        await supabase.auth.signOut();
+        navigate({ to: "/auth" });
+      }}
+      className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm border hover:bg-muted"
+      title="Sign out"
+    >
+      <LogOut className="h-4 w-4" /> Sign out
+    </button>
+  );
+}
+
 export function Button({
   children, variant = "primary", size = "md", className = "", ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
