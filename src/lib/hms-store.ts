@@ -1,5 +1,6 @@
-// Simple localStorage-backed store for the hospital management system.
-// Client-only; safe against SSR by guarding window access.
+// Supabase-backed data layer for the hospital management system.
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Patient = {
   id: string;
@@ -30,8 +31,8 @@ export type Appointment = {
   id: string;
   patientId: string;
   doctorId: string;
-  date: string; // ISO date
-  time: string; // HH:mm
+  date: string;
+  time: string;
   reason: string;
   status: "Scheduled" | "Completed" | "Cancelled";
 };
@@ -46,140 +47,187 @@ export type Invoice = {
   createdAt: string;
 };
 
-type DB = {
-  patients: Patient[];
-  doctors: Doctor[];
-  appointments: Appointment[];
-  invoices: Invoice[];
-};
-
-const KEY = "hms:db:v1";
-
-const seed = (): DB => ({
-  patients: [
-    {
-      id: "p1", firstName: "Aarav", lastName: "Sharma", dob: "1988-04-12",
-      gender: "male", phone: "555-0101", email: "aarav@example.com",
-      address: "22 Oak St", bloodGroup: "O+", allergies: "Penicillin",
-      history: "Hypertension", createdAt: new Date().toISOString(),
-    },
-    {
-      id: "p2", firstName: "Maya", lastName: "Iyer", dob: "1995-09-30",
-      gender: "female", phone: "555-0102", email: "maya@example.com",
-      address: "88 Pine Ave", bloodGroup: "A-", allergies: "None",
-      history: "Asthma", createdAt: new Date().toISOString(),
-    },
-  ],
-  doctors: [
-    { id: "d1", name: "Dr. Nadia Chen", specialty: "Cardiology", department: "Cardiology", phone: "555-0201", email: "nchen@hms.io", shift: "Morning" },
-    { id: "d2", name: "Dr. Marco Silva", specialty: "Pediatrics", department: "Pediatrics", phone: "555-0202", email: "msilva@hms.io", shift: "Evening" },
-    { id: "d3", name: "Dr. Priya Rao", specialty: "General Medicine", department: "OPD", phone: "555-0203", email: "prao@hms.io", shift: "Morning" },
-  ],
-  appointments: [
-    { id: "a1", patientId: "p1", doctorId: "d1", date: new Date().toISOString().slice(0,10), time: "10:00", reason: "Follow-up", status: "Scheduled" },
-    { id: "a2", patientId: "p2", doctorId: "d3", date: new Date().toISOString().slice(0,10), time: "14:30", reason: "Consultation", status: "Scheduled" },
-  ],
-  invoices: [
-    { id: "i1", patientId: "p1", items: [{ description: "Consultation", amount: 80 }, { description: "ECG", amount: 120 }], total: 200, paid: true, createdAt: new Date().toISOString() },
-  ],
+// Row mappers
+const patientFromRow = (r: any): Patient => ({
+  id: r.id,
+  firstName: r.first_name ?? "",
+  lastName: r.last_name ?? "",
+  dob: r.dob ?? "",
+  gender: (r.gender ?? "other") as Patient["gender"],
+  phone: r.phone ?? "",
+  email: r.email ?? "",
+  address: r.address ?? "",
+  bloodGroup: r.blood_group ?? "",
+  allergies: r.allergies ?? "",
+  history: r.history ?? "",
+  createdAt: r.created_at ?? "",
+});
+const patientToRow = (p: Patient) => ({
+  first_name: p.firstName, last_name: p.lastName, dob: p.dob || null,
+  gender: p.gender, phone: p.phone || null, email: p.email || null,
+  address: p.address || null, blood_group: p.bloodGroup || null,
+  allergies: p.allergies || null, history: p.history || null,
 });
 
-function read(): DB {
-  if (typeof window === "undefined") return seed();
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) {
-      const s = seed();
-      window.localStorage.setItem(KEY, JSON.stringify(s));
-      return s;
-    }
-    return JSON.parse(raw) as DB;
-  } catch {
-    return seed();
-  }
+const doctorFromRow = (r: any): Doctor => ({
+  id: r.id, name: r.name ?? "", specialty: r.specialty ?? "",
+  department: r.department ?? "", phone: r.phone ?? "", email: r.email ?? "",
+  shift: (r.shift ?? "Morning") as Doctor["shift"],
+});
+const doctorToRow = (d: Doctor) => ({
+  name: d.name, specialty: d.specialty || null, department: d.department || null,
+  phone: d.phone || null, email: d.email || null, shift: d.shift,
+});
+
+const apptFromRow = (r: any): Appointment => ({
+  id: r.id, patientId: r.patient_id, doctorId: r.doctor_id,
+  date: r.date, time: r.time, reason: r.reason ?? "",
+  status: (r.status ?? "Scheduled") as Appointment["status"],
+});
+const apptToRow = (a: Appointment) => ({
+  patient_id: a.patientId, doctor_id: a.doctorId,
+  date: a.date, time: a.time, reason: a.reason || null, status: a.status,
+});
+
+const invoiceFromRow = (r: any): Invoice => ({
+  id: r.id, patientId: r.patient_id,
+  items: Array.isArray(r.items) ? r.items : [],
+  total: Number(r.total) || 0, paid: !!r.paid,
+  createdAt: r.created_at ?? "",
+});
+const invoiceToRow = (i: Invoice) => ({
+  patient_id: i.patientId, items: i.items, total: i.total, paid: i.paid,
+});
+
+const HMS_KEY = ["hms-data"] as const;
+
+async function fetchAll() {
+  const [p, d, a, i] = await Promise.all([
+    supabase.from("patients").select("*").order("created_at", { ascending: false }),
+    supabase.from("doctors").select("*").order("name"),
+    supabase.from("appointments").select("*").order("date").order("time"),
+    supabase.from("invoices").select("*").order("created_at", { ascending: false }),
+  ]);
+  if (p.error) throw p.error;
+  if (d.error) throw d.error;
+  if (a.error) throw a.error;
+  if (i.error) throw i.error;
+  return {
+    patients: (p.data ?? []).map(patientFromRow),
+    doctors: (d.data ?? []).map(doctorFromRow),
+    appointments: (a.data ?? []).map(apptFromRow),
+    invoices: (i.data ?? []).map(invoiceFromRow),
+  };
 }
 
-function write(db: DB) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(db));
-  window.dispatchEvent(new Event("hms:changed"));
-}
-
-export const uid = () => Math.random().toString(36).slice(2, 10);
-
-export const db = {
-  all: () => read(),
-  save: (db: DB) => write(db),
-  // patients
-  listPatients: () => read().patients,
-  getPatient: (id: string) => read().patients.find((p) => p.id === id),
-  upsertPatient: (p: Patient) => {
-    const d = read();
-    const idx = d.patients.findIndex((x) => x.id === p.id);
-    if (idx >= 0) d.patients[idx] = p; else d.patients.push(p);
-    write(d);
-  },
-  deletePatient: (id: string) => {
-    const d = read();
-    d.patients = d.patients.filter((p) => p.id !== id);
-    d.appointments = d.appointments.filter((a) => a.patientId !== id);
-    d.invoices = d.invoices.filter((i) => i.patientId !== id);
-    write(d);
-  },
-  // doctors
-  listDoctors: () => read().doctors,
-  upsertDoctor: (doc: Doctor) => {
-    const d = read();
-    const idx = d.doctors.findIndex((x) => x.id === doc.id);
-    if (idx >= 0) d.doctors[idx] = doc; else d.doctors.push(doc);
-    write(d);
-  },
-  deleteDoctor: (id: string) => {
-    const d = read();
-    d.doctors = d.doctors.filter((x) => x.id !== id);
-    write(d);
-  },
-  // appointments
-  listAppointments: () => read().appointments,
-  upsertAppointment: (a: Appointment) => {
-    const d = read();
-    const idx = d.appointments.findIndex((x) => x.id === a.id);
-    if (idx >= 0) d.appointments[idx] = a; else d.appointments.push(a);
-    write(d);
-  },
-  deleteAppointment: (id: string) => {
-    const d = read();
-    d.appointments = d.appointments.filter((x) => x.id !== id);
-    write(d);
-  },
-  // invoices
-  listInvoices: () => read().invoices,
-  upsertInvoice: (i: Invoice) => {
-    const d = read();
-    const idx = d.invoices.findIndex((x) => x.id === i.id);
-    if (idx >= 0) d.invoices[idx] = i; else d.invoices.push(i);
-    write(d);
-  },
-  deleteInvoice: (id: string) => {
-    const d = read();
-    d.invoices = d.invoices.filter((x) => x.id !== id);
-    write(d);
-  },
-};
-
-// React hook to subscribe to changes
-import { useEffect, useState } from "react";
 export function useHmsData() {
-  const [data, setData] = useState<DB>(() => (typeof window === "undefined" ? seed() : read()));
-  useEffect(() => {
-    const on = () => setData(read());
-    on();
-    window.addEventListener("hms:changed", on);
-    window.addEventListener("storage", on);
-    return () => {
-      window.removeEventListener("hms:changed", on);
-      window.removeEventListener("storage", on);
-    };
-  }, []);
-  return data;
+  const { data } = useQuery({
+    queryKey: HMS_KEY,
+    queryFn: fetchAll,
+    staleTime: 15_000,
+  });
+  return data ?? { patients: [], doctors: [], appointments: [], invoices: [] };
 }
+
+export function useHmsActions() {
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: HMS_KEY });
+
+  const savePatient = useMutation({
+    mutationFn: async (p: Patient) => {
+      const row = patientToRow(p);
+      const isNew = !p.id || p.id.length < 20; // uuid check
+      if (isNew) {
+        const { error } = await supabase.from("patients").insert(row);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("patients").update(row).eq("id", p.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: invalidate,
+  });
+  const deletePatient = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("patients").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  const saveDoctor = useMutation({
+    mutationFn: async (d: Doctor) => {
+      const row = doctorToRow(d);
+      const isNew = !d.id || d.id.length < 20;
+      if (isNew) {
+        const { error } = await supabase.from("doctors").insert(row);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("doctors").update(row).eq("id", d.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: invalidate,
+  });
+  const deleteDoctor = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("doctors").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  const saveAppointment = useMutation({
+    mutationFn: async (a: Appointment) => {
+      const row = apptToRow(a);
+      const isNew = !a.id || a.id.length < 20;
+      if (isNew) {
+        const { error } = await supabase.from("appointments").insert(row);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("appointments").update(row).eq("id", a.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: invalidate,
+  });
+  const deleteAppointment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("appointments").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  const saveInvoice = useMutation({
+    mutationFn: async (i: Invoice) => {
+      const row = invoiceToRow(i);
+      const isNew = !i.id || i.id.length < 20;
+      if (isNew) {
+        const { error } = await supabase.from("invoices").insert(row);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("invoices").update(row).eq("id", i.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: invalidate,
+  });
+  const deleteInvoice = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  return {
+    savePatient, deletePatient,
+    saveDoctor, deleteDoctor,
+    saveAppointment, deleteAppointment,
+    saveInvoice, deleteInvoice,
+  };
+}
+
+// Local id for new (unsaved) records — replaced by real uuid on insert.
+export const uid = () => "new-" + Math.random().toString(36).slice(2, 10);

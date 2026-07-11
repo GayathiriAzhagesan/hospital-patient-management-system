@@ -3,10 +3,10 @@ import { AppShell, Card, Badge } from "@/components/AppShell";
 import { useHmsData } from "@/lib/hms-store";
 import { Users, CalendarDays, Stethoscope, Receipt, TrendingUp } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — MediCare Portal" },
+      { title: "Dashboard — MediCare HMS" },
       { name: "description", content: "Hospital patient management dashboard with patients, appointments, doctors, and billing overview." },
     ],
   }),
@@ -21,10 +21,10 @@ function Dashboard() {
   const outstanding = invoices.filter((i) => !i.paid).reduce((s, i) => s + i.total, 0);
 
   const stats = [
-    { label: "Patients", value: patients.length, icon: Users, tone: "info" as const, to: "/patients" },
-    { label: "Doctors", value: doctors.length, icon: Stethoscope, tone: "success" as const, to: "/doctors" },
-    { label: "Today's Appointments", value: todaysAppts.length, icon: CalendarDays, tone: "warning" as const, to: "/appointments" },
-    { label: "Revenue Collected", value: `$${revenue.toLocaleString()}`, icon: Receipt, tone: "success" as const, to: "/billing" },
+    { label: "Patients", value: patients.length, icon: Users, to: "/patients" as const },
+    { label: "Doctors", value: doctors.length, icon: Stethoscope, to: "/doctors" as const },
+    { label: "Today's Appointments", value: todaysAppts.length, icon: CalendarDays, to: "/appointments" as const },
+    { label: "Revenue Collected", value: `$${revenue.toLocaleString()}`, icon: Receipt, to: "/billing" as const },
   ];
 
   return (
@@ -67,9 +67,7 @@ function Dashboard() {
                   <div key={a.id} className="py-3 flex items-center justify-between">
                     <div>
                       <div className="font-medium">{p ? `${p.firstName} ${p.lastName}` : "Unknown"}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {d?.name ?? "—"} · {a.reason}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{d?.name ?? "—"} · {a.reason}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium">{a.time}</div>
@@ -90,7 +88,7 @@ function Dashboard() {
             <Row label="Invoices" value={invoices.length.toString()} tone="info" />
           </div>
           <div className="mt-6 p-3 rounded-lg bg-muted flex items-center gap-2 text-xs text-muted-foreground">
-            <TrendingUp className="h-4 w-4" /> Data persists locally in your browser.
+            <TrendingUp className="h-4 w-4" /> Live data from your secure cloud database.
           </div>
         </Card>
       </div>

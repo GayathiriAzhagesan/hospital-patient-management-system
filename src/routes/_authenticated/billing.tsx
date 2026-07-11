@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, Card, Button, Input, Select, Label, Modal, Badge } from "@/components/AppShell";
-import { db, uid, useHmsData, type Invoice, type InvoiceItem } from "@/lib/hms-store";
+import { uid, useHmsData, useHmsActions, type Invoice, type InvoiceItem } from "@/lib/hms-store";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
 
-export const Route = createFileRoute("/billing")({
+export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({
     meta: [
       { title: "Billing — MediCare HMS" },
@@ -21,6 +21,7 @@ const empty = (): Invoice => ({
 
 function BillingPage() {
   const { invoices, patients } = useHmsData();
+  const { saveInvoice, deleteInvoice } = useHmsActions();
   const [editing, setEditing] = useState<Invoice | null>(null);
   const collected = invoices.filter((i) => i.paid).reduce((s, i) => s + i.total, 0);
   const outstanding = invoices.filter((i) => !i.paid).reduce((s, i) => s + i.total, 0);
@@ -33,7 +34,7 @@ function BillingPage() {
     >
       <div className="grid gap-4 sm:grid-cols-3 mb-4">
         <Card className="p-4"><div className="text-xs text-muted-foreground">Collected</div><div className="text-2xl font-semibold text-success">${collected.toLocaleString()}</div></Card>
-        <Card className="p-4"><div className="text-xs text-muted-foreground">Outstanding</div><div className="text-2xl font-semibold" style={{ color: "var(--warning-foreground)" }}>${outstanding.toLocaleString()}</div></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground">Outstanding</div><div className="text-2xl font-semibold">${outstanding.toLocaleString()}</div></Card>
         <Card className="p-4"><div className="text-xs text-muted-foreground">Invoices</div><div className="text-2xl font-semibold">{invoices.length}</div></Card>
       </div>
 
@@ -65,12 +66,12 @@ function BillingPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="inline-flex gap-1">
                         {!i.paid && (
-                          <Button variant="ghost" size="sm" onClick={() => db.upsertInvoice({ ...i, paid: true })}>
+                          <Button variant="ghost" size="sm" onClick={() => saveInvoice.mutate({ ...i, paid: true })}>
                             <Check className="h-3.5 w-3.5 text-success" />
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" onClick={() => setEditing(i)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete invoice?")) db.deleteInvoice(i.id); }}>
+                        <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete invoice?")) deleteInvoice.mutate(i.id); }}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </div>
@@ -84,14 +85,21 @@ function BillingPage() {
         </div>
       </Card>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={invoices.find((i) => i.id === editing?.id) ? "Edit Invoice" : "New Invoice"}>
-        {editing && <InvoiceForm inv={editing} onSave={(v) => { db.upsertInvoice(v); setEditing(null); }} onCancel={() => setEditing(null)} />}
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing && !editing.id.startsWith("new-") ? "Edit Invoice" : "New Invoice"}>
+        {editing && (
+          <InvoiceForm
+            inv={editing}
+            busy={saveInvoice.isPending}
+            onSave={(v) => saveInvoice.mutate(v, { onSuccess: () => setEditing(null) })}
+            onCancel={() => setEditing(null)}
+          />
+        )}
       </Modal>
     </AppShell>
   );
 }
 
-function InvoiceForm({ inv, onSave, onCancel }: { inv: Invoice; onSave: (v: Invoice) => void; onCancel: () => void }) {
+function InvoiceForm({ inv, onSave, onCancel, busy }: { inv: Invoice; onSave: (v: Invoice) => void; onCancel: () => void; busy: boolean }) {
   const { patients } = useHmsData();
   const [f, setF] = useState(inv);
   const setItems = (items: InvoiceItem[]) => setF({ ...f, items, total: items.reduce((s, i) => s + (Number(i.amount) || 0), 0) });
@@ -130,7 +138,7 @@ function InvoiceForm({ inv, onSave, onCancel }: { inv: Invoice; onSave: (v: Invo
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save Invoice</Button>
+        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save Invoice"}</Button>
       </div>
     </form>
   );

@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell, Card, Button, Input, Select, Label, Modal, Badge } from "@/components/AppShell";
-import { db, uid, useHmsData, type Appointment } from "@/lib/hms-store";
+import { uid, useHmsData, useHmsActions, type Appointment } from "@/lib/hms-store";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/appointments")({
+export const Route = createFileRoute("/_authenticated/appointments")({
   head: () => ({
     meta: [
       { title: "Appointments — MediCare HMS" },
@@ -21,6 +21,7 @@ const empty = (): Appointment => ({
 
 function AppointmentsPage() {
   const { appointments, patients, doctors } = useHmsData();
+  const { saveAppointment, deleteAppointment } = useHmsActions();
   const [editing, setEditing] = useState<Appointment | null>(null);
   const [filter, setFilter] = useState<"all" | "today" | "upcoming">("all");
 
@@ -75,7 +76,7 @@ function AppointmentsPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="inline-flex gap-1">
                         <Button variant="ghost" size="sm" onClick={() => setEditing(a)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete appointment?")) db.deleteAppointment(a.id); }}>
+                        <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete appointment?")) deleteAppointment.mutate(a.id); }}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </div>
@@ -89,11 +90,12 @@ function AppointmentsPage() {
         </div>
       </Card>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={appointments.find((a) => a.id === editing?.id) ? "Edit Appointment" : "New Appointment"}>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing && !editing.id.startsWith("new-") ? "Edit Appointment" : "New Appointment"}>
         {editing && (
           <ApptForm
             appt={editing}
-            onSave={(a) => { db.upsertAppointment(a); setEditing(null); }}
+            busy={saveAppointment.isPending}
+            onSave={(a) => saveAppointment.mutate(a, { onSuccess: () => setEditing(null) })}
             onCancel={() => setEditing(null)}
           />
         )}
@@ -102,7 +104,7 @@ function AppointmentsPage() {
   );
 }
 
-function ApptForm({ appt, onSave, onCancel }: { appt: Appointment; onSave: (a: Appointment) => void; onCancel: () => void }) {
+function ApptForm({ appt, onSave, onCancel, busy }: { appt: Appointment; onSave: (a: Appointment) => void; onCancel: () => void; busy: boolean }) {
   const { patients, doctors } = useHmsData();
   const [f, setF] = useState(appt);
   const set = <K extends keyof Appointment>(k: K, v: Appointment[K]) => setF({ ...f, [k]: v });
@@ -132,7 +134,7 @@ function ApptForm({ appt, onSave, onCancel }: { appt: Appointment; onSave: (a: A
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
       </div>
     </form>
   );
