@@ -45,7 +45,7 @@ const DoctorSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80",
+      default: "",
     },
     qualifications: {
       type: String,

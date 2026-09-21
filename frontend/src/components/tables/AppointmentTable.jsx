@@ -16,7 +16,7 @@ export const AppointmentTable = ({ appointments, onUpdateStatus, onCancel, canMa
           border: "1px solid var(--border-color)",
         }}
       >
-        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No appointments found.</p>
+        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No Appointments Scheduled</p>
       </div>
     );
   }

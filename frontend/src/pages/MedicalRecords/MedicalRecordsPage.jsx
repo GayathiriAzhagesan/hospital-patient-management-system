@@ -120,13 +120,13 @@ export const MedicalRecordsPage = () => {
                       display: "inline-block",
                       padding: "4px 12px",
                       borderRadius: "6px",
-                      background: "#fef2f2",
-                      color: "var(--rose-600)",
+                      background: selectedPatient.bloodGroup ? "#fef2f2" : "#f1f5f9",
+                      color: selectedPatient.bloodGroup ? "var(--rose-600)" : "var(--slate-500)",
                       fontWeight: 800,
                       fontSize: "1rem",
                     }}
                   >
-                    {selectedPatient.bloodGroup || "O+"}
+                    {selectedPatient.bloodGroup || "Not specified"}
                   </span>
                 </div>
               </div>
@@ -141,25 +141,25 @@ export const MedicalRecordsPage = () => {
                 <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>BLOOD PRESSURE</div>
                   <div style={{ fontWeight: 700, fontSize: "0.875rem", marginTop: "2px" }}>
-                    {selectedPatient.vitals?.bloodPressure || "120/80 mmHg"}
+                    {selectedPatient.vitals?.bloodPressure || "Not recorded"}
                   </div>
                 </div>
                 <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>HEART RATE</div>
                   <div style={{ fontWeight: 700, fontSize: "0.875rem", marginTop: "2px" }}>
-                    {selectedPatient.vitals?.heartRate || "72 bpm"}
+                    {selectedPatient.vitals?.heartRate ? `${selectedPatient.vitals.heartRate} bpm` : "Not recorded"}
                   </div>
                 </div>
                 <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>TEMPERATURE</div>
                   <div style={{ fontWeight: 700, fontSize: "0.875rem", marginTop: "2px" }}>
-                    {selectedPatient.vitals?.temperature || "98.6 °F"}
+                    {selectedPatient.vitals?.temperature ? `${selectedPatient.vitals.temperature} °F` : "Not recorded"}
                   </div>
                 </div>
                 <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>OXYGEN (SpO2)</div>
                   <div style={{ fontWeight: 700, fontSize: "0.875rem", marginTop: "2px" }}>
-                    {selectedPatient.vitals?.oxygenLevel || "99%"}
+                    {selectedPatient.vitals?.oxygenLevel ? `${selectedPatient.vitals.oxygenLevel}%` : "Not recorded"}
                   </div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export const MedicalRecordsPage = () => {
             <div style={{ marginBottom: "20px" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--slate-500)", fontWeight: 700 }}>CLINICAL HISTORY</span>
               <p style={{ fontSize: "0.875rem", color: "var(--slate-700)", marginTop: "4px", lineHeight: 1.5 }}>
-                {selectedPatient.history || "No prior major procedures."}
+                {selectedPatient.history || "No prior clinical history recorded."}
               </p>
             </div>
 
@@ -189,7 +189,7 @@ export const MedicalRecordsPage = () => {
               </span>
               {(!selectedPatient.prescriptions || selectedPatient.prescriptions.length === 0) ? (
                 <p style={{ fontSize: "0.8125rem", color: "var(--slate-400)", marginTop: "6px" }}>
-                  No active prescriptions recorded.
+                  No Prescriptions Found
                 </p>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>

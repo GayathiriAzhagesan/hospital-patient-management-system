@@ -50,8 +50,8 @@ medicare-portal/
 │   │   │   └── tables/           # AppointmentTable, PatientTable, InvoiceTable
 │   │   │
 │   │   ├── pages/
-│   │   │   ├── Landing/          # High-converting hero, features & quick-demo login
-│   │   │   ├── Login/            # Authentication with 1-click persona shortcuts
+│   │   │   ├── Landing/          # High-converting hero, features & authentication access
+│   │   │   ├── Login/            # Production JWT login with role redirection
 │   │   │   ├── Register/         # Account registration with role selection
 │   │   │   ├── Patient/          # Patient dashboard: Vitals telemetry & EHR history
 │   │   │   ├── Doctor/           # Doctor dashboard: Consultation queue & digital Rx
@@ -118,7 +118,7 @@ medicare-portal/
 │   │
 │   ├── utils/
 │   │   ├── generateToken.js      # JWT signing helper with expiration
-│   │   └── seedData.js           # Automated clinical seeder for demo & testing
+│   │   └── clearDatabase.js      # Database maintenance & cleanup utility
 │   │
 │   ├── server.js                 # Express application entry point & CORS
 │   ├── package.json
@@ -143,16 +143,16 @@ medicare-portal/
 
 ---
 
-## 🔑 Demo Test Personas (1-Click Evaluation)
+## 🔑 Production Role-Based Access Control
 
-All accounts are pre-seeded with the password: **`Password123!`**
+Users register an authentic account specifying their clinical or administrative role:
 
-| Persona | Email | Primary Module |
+| Role | Access Permissions | Primary Workflow |
 | :--- | :--- | :--- |
-| **Doctor** | `sarah.mitchell@medicare.health` | Doctor Consultation Queue & Digital Rx |
-| **Patient** | `james.rodriguez@email.com` | Patient Health Profile & Vitals Tracker |
-| **Pharmacist**| `alex.chen@medicare.health` | Pharmacy Prescription Dispensation |
-| **Admin** | `elena.rostova@medicare.health` | Hospital Occupancy & Billing Analytics |
+| **Doctor** | Consultation queue, patient EHR telemetry, clinical notes, digital Rx issuance | Complete patient sessions & prescribe medications |
+| **Patient** | Personal health records, vital signs telemetry, appointment booking, invoices | View health history & schedule appointments |
+| **Pharmacist**| Prescription queue, dosage verification, contraindication warnings, dispensing logs | Review & dispense active digital prescriptions |
+| **Admin** | Hospital capacity monitoring, staff directory, audit compliance, billing invoices | System governance & financial clearances |
 
 ---
 
@@ -229,11 +229,8 @@ NODE_ENV=development
 VITE_API_URL=/api
 ```
 
-### 4. Seed Clinical Database
-Populate realistic doctor directories, patient records, vital logs, appointments, and invoices:
-```bash
-npm run seed
-```
+### 4. Create Your Account
+Open the portal and click **Register** to create your real user account as a Patient, Doctor, Pharmacist, or Administrator.
 
 ### 5. Run the Application
 Open two terminal windows (or run concurrently):
@@ -246,7 +243,7 @@ npm run server
 npm run client
 ```
 
-Navigate to `http://localhost:5173` to explore the portal.
+Navigate to your local frontend port or the deployed production environment to explore the portal.
 
 ---
 

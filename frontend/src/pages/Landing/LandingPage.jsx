@@ -19,15 +19,8 @@ import {
 } from "lucide-react";
 
 export const LandingPage = () => {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const handleQuickLogin = async (email, role) => {
-    const res = await login(email, "Password123!");
-    if (res.success) {
-      navigate(`/dashboard/${role.toLowerCase()}`);
-    }
-  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#ffffff", color: "var(--slate-900)" }}>
@@ -91,10 +84,10 @@ export const LandingPage = () => {
           ) : (
             <>
               <Link to="/login" className="btn btn-secondary btn-sm">
-                Sign In
+                Login
               </Link>
               <Link to="/register" className="btn btn-primary btn-sm">
-                Register Portal <ArrowRight size={16} />
+                Register <ArrowRight size={16} />
               </Link>
             </>
           )}
@@ -166,15 +159,15 @@ export const LandingPage = () => {
         </p>
 
         <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap", marginBottom: "48px" }}>
-          <Link to="/register" className="btn btn-primary btn-lg">
-            Get Started Free <ArrowRight size={18} />
+          <Link to="/login" className="btn btn-primary btn-lg">
+            Login <ArrowRight size={18} />
           </Link>
-          <Link to="/login" className="btn btn-secondary btn-lg">
-            Explore Demo Roles
+          <Link to="/register" className="btn btn-secondary btn-lg">
+            Register
           </Link>
         </div>
 
-        {/* 1-Click Persona Evaluation Strip */}
+        {/* Role Architecture Overview Strip */}
         <div
           style={{
             background: "var(--slate-50)",
@@ -196,69 +189,53 @@ export const LandingPage = () => {
                 color: "var(--slate-400)",
               }}
             >
-              1-Click Recruiter & Reviewer Quick-Access
+              Role-Based Access Control Architecture
             </span>
             <h4 style={{ fontSize: "1.125rem", fontWeight: 700, marginTop: "2px" }}>
-              Test The System Across 4 Medical Roles
+              Secure Portals for Healthcare Workflows
             </h4>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-            <button
-              onClick={() => handleQuickLogin("sarah.mitchell@medicare.health", "Doctor")}
-              className="card"
-              style={{ padding: "16px", textAlign: "left", cursor: "pointer", background: "#ffffff" }}
-            >
+            <div className="card" style={{ padding: "16px", textAlign: "left", background: "#ffffff" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                 <Stethoscope size={18} color="#0d9488" />
                 <strong style={{ fontSize: "0.875rem" }}>Doctor Portal</strong>
               </div>
               <p style={{ fontSize: "0.75rem", color: "var(--slate-500)" }}>
-                Dr. Sarah Mitchell (Chief of Cardiology)
+                Consultation queues, patient EHR telemetry, clinical notes & digital prescriptions.
               </p>
-            </button>
+            </div>
 
-            <button
-              onClick={() => handleQuickLogin("james.rodriguez@email.com", "Patient")}
-              className="card"
-              style={{ padding: "16px", textAlign: "left", cursor: "pointer", background: "#ffffff" }}
-            >
+            <div className="card" style={{ padding: "16px", textAlign: "left", background: "#ffffff" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                 <Users size={18} color="#6366f1" />
                 <strong style={{ fontSize: "0.875rem" }}>Patient Portal</strong>
               </div>
               <p style={{ fontSize: "0.75rem", color: "var(--slate-500)" }}>
-                James Rodriguez (EHR & Vitals)
+                Personal health history, vitals log, specialist appointments & billing payments.
               </p>
-            </button>
+            </div>
 
-            <button
-              onClick={() => handleQuickLogin("alex.chen@medicare.health", "Pharmacist")}
-              className="card"
-              style={{ padding: "16px", textAlign: "left", cursor: "pointer", background: "#ffffff" }}
-            >
+            <div className="card" style={{ padding: "16px", textAlign: "left", background: "#ffffff" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                 <Pill size={18} color="#d946ef" />
                 <strong style={{ fontSize: "0.875rem" }}>Pharmacist Portal</strong>
               </div>
               <p style={{ fontSize: "0.75rem", color: "var(--slate-500)" }}>
-                Alex Chen, PharmD (Dispensary)
+                Prescription verification queue, dosage checks, and medicine dispensing logs.
               </p>
-            </button>
+            </div>
 
-            <button
-              onClick={() => handleQuickLogin("elena.rostova@medicare.health", "Admin")}
-              className="card"
-              style={{ padding: "16px", textAlign: "left", cursor: "pointer", background: "#ffffff" }}
-            >
+            <div className="card" style={{ padding: "16px", textAlign: "left", background: "#ffffff" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                 <ShieldAlert size={18} color="#f59e0b" />
-                <strong style={{ fontSize: "0.875rem" }}>Admin Portal</strong>
+                <strong style={{ fontSize: "0.875rem" }}>Admin Operations</strong>
               </div>
               <p style={{ fontSize: "0.75rem", color: "var(--slate-500)" }}>
-                Elena Rostova (Operations & Billing)
+                Staff management, department occupancy, audit trails, and billing analytics.
               </p>
-            </button>
+            </div>
           </div>
         </div>
       </section>

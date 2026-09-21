@@ -16,7 +16,7 @@ export const InvoiceTable = ({ invoices, onPayInvoice, onViewDetails, canManage 
           border: "1px solid var(--border-color)",
         }}
       >
-        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No invoices found.</p>
+        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No Invoices Available</p>
       </div>
     );
   }

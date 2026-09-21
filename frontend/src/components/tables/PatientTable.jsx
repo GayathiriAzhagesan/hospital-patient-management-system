@@ -14,7 +14,7 @@ export const PatientTable = ({ patients, onSelectPatient, onAddPrescription, can
           border: "1px solid var(--border-color)",
         }}
       >
-        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No patient records available.</p>
+        <p style={{ fontSize: "1rem", fontWeight: 500 }}>No Patients Found</p>
       </div>
     );
   }
@@ -38,7 +38,7 @@ export const PatientTable = ({ patients, onSelectPatient, onAddPrescription, can
               <td style={{ fontWeight: 600, color: "var(--slate-900)" }}>
                 <div>{patient.firstName} {patient.lastName}</div>
                 <div style={{ fontSize: "0.75rem", color: "var(--slate-400)", textTransform: "capitalize" }}>
-                  {patient.gender} • DOB: {patient.dob || "Unknown"}
+                  {patient.gender || "Patient"} {patient.dob ? `• DOB: ${patient.dob}` : ""}
                 </div>
               </td>
               <td>
@@ -51,21 +51,23 @@ export const PatientTable = ({ patients, onSelectPatient, onAddPrescription, can
                     display: "inline-block",
                     padding: "2px 8px",
                     borderRadius: "4px",
-                    background: "#fef2f2",
-                    color: "var(--rose-600)",
+                    background: patient.bloodGroup ? "#fef2f2" : "#f1f5f9",
+                    color: patient.bloodGroup ? "var(--rose-600)" : "var(--slate-500)",
                     fontWeight: 700,
                     fontSize: "0.75rem",
                   }}
                 >
-                  {patient.bloodGroup || "O+"}
+                  {patient.bloodGroup || "N/A"}
                 </span>
               </td>
               <td style={{ fontSize: "0.8125rem", color: "var(--slate-600)" }}>
                 {patient.allergies || "None"}
               </td>
               <td>
-                <span style={{ fontSize: "0.8125rem", fontWeight: 500 }}>
-                  {patient.vitals?.bloodPressure || "120/80"} • {patient.vitals?.heartRate || "72 bpm"}
+                <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: patient.vitals?.bloodPressure ? "var(--slate-800)" : "var(--slate-400)" }}>
+                  {patient.vitals?.bloodPressure
+                    ? `${patient.vitals.bloodPressure} • ${patient.vitals.heartRate ? `${patient.vitals.heartRate} bpm` : "N/A"}`
+                    : "Not recorded"}
                 </span>
               </td>
               <td>

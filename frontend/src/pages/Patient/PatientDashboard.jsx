@@ -76,7 +76,7 @@ export const PatientDashboard = () => {
             Welcome back, {user?.name}
           </h1>
           <p style={{ color: "var(--slate-500)", marginTop: "4px" }}>
-            Patient ID: {patient?._id ? `PAT-${patient._id.slice(-6).toUpperCase()}` : "Active Member"} • Blood Group: {patient?.bloodGroup || "O+"}
+            Patient ID: {patient?._id ? `PAT-${patient._id.slice(-6).toUpperCase()}` : "Active Member"} • Blood Group: {patient?.bloodGroup || "Not specified"}
           </p>
         </div>
 
@@ -92,22 +92,22 @@ export const PatientDashboard = () => {
       <div className="grid-cols-4" style={{ marginBottom: "28px" }}>
         <StatCard
           title="Blood Pressure"
-          value={patient?.vitals?.bloodPressure || "120/80 mmHg"}
-          change="Normal Range"
+          value={patient?.vitals?.bloodPressure || "Not recorded"}
+          change={patient?.vitals?.bloodPressure ? "Vitals Synced" : "Pending Checkup"}
           icon={Heart}
           color="rose"
         />
         <StatCard
           title="Resting Heart Rate"
-          value={patient?.vitals?.heartRate || "72 bpm"}
-          change="Optimal"
+          value={patient?.vitals?.heartRate ? `${patient.vitals.heartRate} bpm` : "Not recorded"}
+          change={patient?.vitals?.heartRate ? "Optimal" : "Pending Checkup"}
           icon={Activity}
           color="teal"
         />
         <StatCard
           title="Oxygen Saturation"
-          value={patient?.vitals?.oxygenLevel || "99% SpO2"}
-          change="Healthy"
+          value={patient?.vitals?.oxygenLevel ? `${patient.vitals.oxygenLevel}% SpO2` : "Not recorded"}
+          change={patient?.vitals?.oxygenLevel ? "Healthy" : "Pending Checkup"}
           icon={Activity}
           color="blue"
         />
@@ -157,7 +157,7 @@ export const PatientDashboard = () => {
                 Medical History
               </span>
               <p style={{ fontSize: "0.875rem", color: "var(--slate-700)", marginTop: "4px", lineHeight: 1.5 }}>
-                {patient?.history || "Standard general wellness tracking."}
+                {patient?.history || "No clinical history recorded."}
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ export const PatientDashboard = () => {
             </h3>
 
             {(!patient?.prescriptions || patient.prescriptions.length === 0) ? (
-              <p style={{ fontSize: "0.875rem", color: "var(--slate-400)" }}>No active prescriptions.</p>
+              <p style={{ fontSize: "0.875rem", color: "var(--slate-400)" }}>No Prescriptions Found</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {patient.prescriptions.map((rx, idx) => (

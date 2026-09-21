@@ -115,21 +115,21 @@ export const AdminDashboard = () => {
         <StatCard
           title="Total Registered Patients"
           value={patients.length}
-          change="+12% this month"
+          change={`${patients.length} active records`}
           icon={Users}
           color="teal"
         />
         <StatCard
           title="Clinical Medical Staff"
           value={doctors.length}
-          change="4 Key Specialties"
+          change={`${new Set(doctors.map((d) => d.specialty).filter(Boolean)).size} Specialties Active`}
           icon={Stethoscope}
           color="indigo"
         />
         <StatCard
           title="Total Consultations"
           value={appointments.length}
-          change="Clinic Queue Flow"
+          change={`${appointments.filter((a) => a.status === "Scheduled").length} Scheduled`}
           icon={Calendar}
           color="amber"
         />
@@ -140,89 +140,85 @@ export const AdminDashboard = () => {
         {/* Department Occupancy */}
         <div className="card">
           <h3 style={{ fontSize: "1.125rem", fontWeight: 700, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Building2 size={18} color="var(--primary-600)" /> Department Capacity & Occupancy
+            <Building2 size={18} color="var(--primary-600)" /> Department Capacity & Distribution
           </h3>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", marginBottom: "6px" }}>
-                <span style={{ fontWeight: 600 }}>Cardiology & Critical Care</span>
-                <span style={{ color: "var(--slate-500)" }}>85% Occupancy</span>
-              </div>
-              <div style={{ width: "100%", height: "8px", background: "var(--slate-100)", borderRadius: "9999px", overflow: "hidden" }}>
-                <div style={{ width: "85%", height: "100%", background: "var(--primary-600)" }} />
-              </div>
+          {doctors.length === 0 ? (
+            <div style={{ padding: "40px 16px", textAlign: "center", color: "var(--slate-400)", fontSize: "0.875rem" }}>
+              No department occupancy recorded yet
             </div>
-
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", marginBottom: "6px" }}>
-                <span style={{ fontWeight: 600 }}>Outpatient & General Medicine</span>
-                <span style={{ color: "var(--slate-500)" }}>62% Occupancy</span>
-              </div>
-              <div style={{ width: "100%", height: "8px", background: "var(--slate-100)", borderRadius: "9999px", overflow: "hidden" }}>
-                <div style={{ width: "62%", height: "100%", background: "#3b82f6" }} />
-              </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {Object.entries(
+                doctors.reduce((acc, doc) => {
+                  const dept = doc.department || "General Medicine";
+                  acc[dept] = (acc[dept] || 0) + 1;
+                  return acc;
+                }, {})
+              ).map(([dept, count], idx) => {
+                const percent = Math.min(100, Math.round((count / doctors.length) * 100));
+                const colors = ["var(--primary-600)", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
+                const color = colors[idx % colors.length];
+                return (
+                  <div key={dept}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", marginBottom: "6px" }}>
+                      <span style={{ fontWeight: 600 }}>{dept}</span>
+                      <span style={{ color: "var(--slate-500)" }}>{count} Staff ({percent}%)</span>
+                    </div>
+                    <div style={{ width: "100%", height: "8px", background: "var(--slate-100)", borderRadius: "9999px", overflow: "hidden" }}>
+                      <div style={{ width: `${percent}%`, height: "100%", background: color }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", marginBottom: "6px" }}>
-                <span style={{ fontWeight: 600 }}>Pediatric Care Pavilion</span>
-                <span style={{ color: "var(--slate-500)" }}>45% Occupancy</span>
-              </div>
-              <div style={{ width: "100%", height: "8px", background: "var(--slate-100)", borderRadius: "9999px", overflow: "hidden" }}>
-                <div style={{ width: "45%", height: "100%", background: "#10b981" }} />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", marginBottom: "6px" }}>
-                <span style={{ fontWeight: 600 }}>Trauma & Orthopedics Wing</span>
-                <span style={{ color: "var(--slate-500)" }}>78% Occupancy</span>
-              </div>
-              <div style={{ width: "100%", height: "8px", background: "var(--slate-100)", borderRadius: "9999px", overflow: "hidden" }}>
-                <div style={{ width: "78%", height: "100%", background: "#f59e0b" }} />
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Security & Audit Logs */}
         <div className="card">
           <h3 style={{ fontSize: "1.125rem", fontWeight: 700, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <ShieldCheck size={18} color="var(--emerald-600)" /> Enterprise Audit & Compliance Log
+            <ShieldCheck size={18} color="var(--emerald-600)" /> Live System Activity & Audit Log
           </h3>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-400)" }}>
-                <span>AUTH_TOKEN_VERIFIED</span>
-                <span>Just now</span>
-              </div>
-              <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--slate-800)", marginTop: "2px" }}>
-                Admin session verified for Elena Rostova (Role: Admin)
-              </p>
+          {appointments.length === 0 && invoices.length === 0 && patients.length === 0 ? (
+            <div style={{ padding: "40px 16px", textAlign: "center", color: "var(--slate-400)", fontSize: "0.875rem" }}>
+              No recent activity logs
             </div>
-
-            <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-400)" }}>
-                <span>MONGODB_ATLAS_PING</span>
-                <span>2 mins ago</span>
-              </div>
-              <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--slate-800)", marginTop: "2px" }}>
-                ReplicaSet heartbeat OK. 5 collections operational.
-              </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[
+                ...appointments.slice(-2).map((apt) => ({
+                  title: "APPOINTMENT_SCHEDULED",
+                  time: apt.date || "Recent",
+                  desc: `Consultation (${apt.status}) for ${apt.patientName || apt.patientId?.name || "Patient"} with ${apt.doctorName || apt.doctorId?.name || "Specialist"}`,
+                })),
+                ...invoices.slice(-2).map((inv) => ({
+                  title: "BILLING_TRANSACTION",
+                  time: inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Recent",
+                  desc: `Invoice #${inv.invoiceNumber} for ${inv.patientName || "Patient"} - ${inv.paid ? "Paid" : "Pending"} (${formatCurrency(inv.total)})`,
+                })),
+              ].map((log, index) => (
+                <div
+                  key={index}
+                  style={{
+                    padding: "10px",
+                    background: "var(--slate-50)",
+                    borderRadius: "var(--radius-md)",
+                    border: "1px solid var(--border-color)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-400)" }}>
+                    <span style={{ fontWeight: 600, color: "var(--primary-700)" }}>{log.title}</span>
+                    <span>{log.time}</span>
+                  </div>
+                  <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--slate-800)", marginTop: "2px" }}>
+                    {log.desc}
+                  </p>
+                </div>
+              ))}
             </div>
-
-            <div style={{ padding: "10px", background: "var(--slate-50)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--slate-400)" }}>
-                <span>EHR_DISPENSING_SYNC</span>
-                <span>12 mins ago</span>
-              </div>
-              <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--slate-800)", marginTop: "2px" }}>
-                Central Pharmacy fulfilled 1 prescription for Atorvastatin 20mg.
-              </p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -231,36 +227,42 @@ export const AdminDashboard = () => {
         <h3 style={{ fontSize: "1.125rem", fontWeight: 700, marginBottom: "16px" }}>
           Registered Clinical Specialists
         </h3>
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Doctor Name</th>
-                <th>Specialty</th>
-                <th>Department</th>
-                <th>Shift</th>
-                <th>Fee</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {doctors.map((doc) => (
-                <tr key={doc._id}>
-                  <td style={{ fontWeight: 600, color: "var(--slate-900)" }}>{doc.name}</td>
-                  <td>{doc.specialty}</td>
-                  <td>{doc.department}</td>
-                  <td>
-                    <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: "4px", background: "#f0fdfa", color: "var(--primary-700)", fontWeight: 600 }}>
-                      {doc.shift}
-                    </span>
-                  </td>
-                  <td style={{ fontWeight: 700 }}>{formatCurrency(doc.consultationFee)}</td>
-                  <td>{doc.roomNumber || "Main Clinic"}</td>
+        {doctors.length === 0 ? (
+          <div style={{ padding: "40px 16px", textAlign: "center", color: "var(--slate-400)", fontSize: "0.875rem" }}>
+            No Doctors Found
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Doctor Name</th>
+                  <th>Specialty</th>
+                  <th>Department</th>
+                  <th>Shift</th>
+                  <th>Fee</th>
+                  <th>Location</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {doctors.map((doc) => (
+                  <tr key={doc._id}>
+                    <td style={{ fontWeight: 600, color: "var(--slate-900)" }}>{doc.name}</td>
+                    <td>{doc.specialty}</td>
+                    <td>{doc.department}</td>
+                    <td>
+                      <span style={{ fontSize: "0.75rem", padding: "2px 8px", borderRadius: "4px", background: "#f0fdfa", color: "var(--primary-700)", fontWeight: 600 }}>
+                        {doc.shift || "Day"}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 700 }}>{formatCurrency(doc.consultationFee || 0)}</td>
+                    <td>{doc.roomNumber || "Main Clinic"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modals */}

@@ -73,17 +73,36 @@ export const Navbar = ({ onToggleSidebar }) => {
         {user ? (
           <>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <img
-                src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-                alt={user.name}
-                style={{
-                  width: "38px",
-                  height: "38px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  border: "2px solid var(--primary-100)",
-                }}
-              />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid var(--primary-100)",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "50%",
+                    background: "var(--primary-100)",
+                    color: "var(--primary-700)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--slate-900)" }}>
                   {user.name}
@@ -107,7 +126,7 @@ export const Navbar = ({ onToggleSidebar }) => {
         ) : (
           <div style={{ display: "flex", gap: "10px" }}>
             <Link to="/login" className="btn btn-secondary btn-sm">
-              Sign In
+              Login
             </Link>
             <Link to="/register" className="btn btn-primary btn-sm">
               Register

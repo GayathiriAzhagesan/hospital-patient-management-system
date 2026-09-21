@@ -37,21 +37,21 @@ const PatientSchema = new mongoose.Schema(
     },
     bloodGroup: {
       type: String,
-      default: "O+",
+      default: "",
     },
     allergies: {
       type: String,
-      default: "None reported",
+      default: "",
     },
     history: {
       type: String,
-      default: "No significant prior surgeries or chronic conditions.",
+      default: "",
     },
     vitals: {
-      bloodPressure: { type: String, default: "120/80 mmHg" },
-      heartRate: { type: String, default: "72 bpm" },
-      temperature: { type: String, default: "98.6 °F" },
-      oxygenLevel: { type: String, default: "99%" },
+      bloodPressure: { type: String, default: "" },
+      heartRate: { type: String, default: "" },
+      temperature: { type: String, default: "" },
+      oxygenLevel: { type: String, default: "" },
     },
     prescriptions: [
       {

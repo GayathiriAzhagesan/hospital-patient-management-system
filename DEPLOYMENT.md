@@ -12,7 +12,7 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
 | Component | Technology | Hosting Provider | Deployment Root | Public Access |
 | :--- | :--- | :--- | :--- | :--- |
 | **Database** | MongoDB Atlas | MongoDB Cloud | N/A | Cloud ReplicaSet |
-| **Backend** | Node.js / Express | Render | `backend/` | `https://medicare-api.onrender.com` |
+| **Backend** | Node.js / Express | Render | `backend/` | `https://medicare-backend-lqem.onrender.com` |
 | **Frontend** | React 18 / Vite | Vercel | `frontend/` | `https://medicare-portal.vercel.app` |
 
 ---
@@ -45,14 +45,6 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
      ```
    - Replace `<password>` with your actual password.
 
-5. **Seed Remote Database (Optional but Recommended)**:
-   - In your local project, open `backend/.env` and temporarily set `MONGO_URI` to your Atlas URI.
-   - Run:
-     ```bash
-     npm run seed
-     ```
-   - All doctor profiles, patients, EHR vitals, appointments, and invoices are now live in Atlas.
-
 ---
 
 ## Part 2: Deploy Backend REST API to Render.com
@@ -65,7 +57,7 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
    - Select your repository: `hospital-patient-management-system` (or `medicare-portal`).
 
 3. **Configure Service Settings**:
-   - **Name**: `medicare-portal-api`
+   - **Name**: `medicare-backend`
    - **Region**: Oregon (US West) or Frankfurt (EU)
    - **Root Directory**: `backend` *(Crucial: tell Render to use the backend folder)*
    - **Runtime**: `Node`
@@ -77,7 +69,7 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
    Under **Environment Variables**, add:
    | Key | Value |
    | :--- | :--- |
-   | `MONGO_URI` | `mongodb+srv://medicare_admin:<password>@cluster0.xxxxx.mongodb.net/medicare?retryWrites=true&w=majority` |
+   | `MONGO_URI` | `mongodb+srv://<user>:<password>@live-poll-cluster.rebwgqc.mongodb.net/medicare?retryWrites=true&w=majority` |
    | `JWT_SECRET` | `medicare_super_secret_jwt_key_2026_production_secure` |
    | `PORT` | `5000` |
    | `NODE_ENV` | `production` |
@@ -85,10 +77,10 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
 5. **Deploy**:
    - Click **Create Web Service**.
    - Render will build and launch your backend.
-   - Once complete, copy your public backend URL, e.g.:
-     `https://medicare-portal-api.onrender.com`
+   - Live production backend URL:
+     `https://medicare-backend-lqem.onrender.com`
    - Verify health check in your browser:
-     `https://medicare-portal-api.onrender.com/api/health`
+     `https://medicare-backend-lqem.onrender.com/api/health`
 
 ---
 
@@ -112,7 +104,7 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
    In the **Environment Variables** section:
    | Key | Value |
    | :--- | :--- |
-   | `VITE_API_URL` | `https://medicare-portal-api.onrender.com/api` *(Your Render backend URL)* |
+   | `VITE_API_URL` | `https://medicare-backend-lqem.onrender.com/api` |
 
 5. **Deploy**:
    - Click **Deploy**.
@@ -123,8 +115,9 @@ This guide provides step-by-step instructions to deploy the decoupled full-stack
 
 ## Part 4: Post-Deployment Verification Checklist
 
-1. **Health Check**: Open `https://<your-backend>.onrender.com/api/health`. Should return `{"status": "ok", "database": "MongoDB Atlas (Connected)"}`.
+1. **Health Check**: Open `https://medicare-backend-lqem.onrender.com/api/health`. Should return `{"status": "ok", "database": "MongoDB Atlas (Connected)"}`.
 2. **Landing Page**: Open your Vercel URL. Ensure illustrations, medical cards, and fonts load with zero console errors.
-3. **1-Click Doctor Login**: Click the Doctor demo card. Confirm immediate redirection to `/dashboard/doctor` with active appointment queues and EHR access.
-4. **Schedule Appointment**: Book a consultation from the Patient portal and verify it immediately displays on the Doctor consultation station.
+3. **Register New Account**: Register a new Doctor, Patient, Pharmacist, or Admin account and confirm seamless redirection.
+4. **Schedule Appointment**: Book a consultation from the Patient portal and verify it immediately displays in the Doctor consultation station.
 5. **Pharmacy Dispensation**: Open `/dashboard/pharmacist` and verify the prescription fulfillment and dispensing logs update dynamically in MongoDB Atlas.
+6. **Billing & Invoices**: Generate and settle invoices in Indian Rupees (`₹`) with live calculations.

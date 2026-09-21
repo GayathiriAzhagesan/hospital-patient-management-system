@@ -96,9 +96,9 @@ export const PharmacistDashboard = () => {
           color="teal"
         />
         <StatCard
-          title="Stock Quality Index"
-          value="99.4%"
-          change="Batch Traceability OK"
+          title="Fulfillment Rate"
+          value={allPrescriptions.length ? `${Math.round((dispensedCount / allPrescriptions.length) * 100)}%` : "100%"}
+          change={allPrescriptions.length ? `${dispensedCount} of ${allPrescriptions.length} Dispensed` : "Dispensary Ready"}
           icon={PackageCheck}
           color="indigo"
         />
@@ -147,7 +147,7 @@ export const PharmacistDashboard = () => {
 
         {filteredPrescriptions.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--slate-400)" }}>
-            No prescriptions matching filter.
+            {allPrescriptions.length === 0 ? "No Prescriptions in Queue" : "No prescriptions matching filter."}
           </div>
         ) : (
           <div className="table-container">

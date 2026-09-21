@@ -138,7 +138,7 @@ export const RegisterPage = () => {
         <p style={{ fontSize: "0.875rem", color: "var(--slate-600)" }}>
           Already have an account?{" "}
           <Link to="/login" style={{ color: "var(--primary-600)", fontWeight: 700 }}>
-            Sign In
+            Login
           </Link>
         </p>
       </div>

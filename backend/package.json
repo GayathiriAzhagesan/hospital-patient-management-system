@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
-    "seed": "node utils/seedData.js"
+    "dev": "node --watch server.js"
   },
   "keywords": ["healthcare", "patient-management", "express", "mongodb", "jwt", "rbac"],
   "author": "Medicare Portal Team",

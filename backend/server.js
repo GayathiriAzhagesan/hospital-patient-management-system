@@ -21,7 +21,7 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend clients (Vercel, Localhost, etc.)
+// Enable CORS for frontend clients (Vercel, custom domain, production deployments)
 app.use(
   cors({
     origin: true,
@@ -69,8 +69,8 @@ const startServer = async () => {
   app.listen(PORT, () => {
     console.log(`========================================================`);
     console.log(`🏥 Medicare Portal API Server running on port ${PORT}`);
-    console.log(`📡 URL: http://localhost:${PORT}`);
-    console.log(`📊 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`📡 Server listening on port: ${PORT}`);
+    console.log(`📊 Health Check endpoint: /api/health`);
     console.log(`🛡️  JWT & Role-Based Access Control (RBAC) Active`);
     console.log(`========================================================`);
   });

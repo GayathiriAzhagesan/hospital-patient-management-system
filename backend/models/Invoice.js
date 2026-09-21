@@ -33,7 +33,7 @@ const InvoiceSchema = new mongoose.Schema(
     },
     patientName: {
       type: String,
-      default: "Standard Patient",
+      default: "",
     },
     items: [InvoiceItemSchema],
     subtotal: {

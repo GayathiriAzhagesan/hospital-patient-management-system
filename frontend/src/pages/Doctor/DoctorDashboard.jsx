@@ -136,8 +136,8 @@ export const DoctorDashboard = () => {
         />
         <StatCard
           title="Consultation Shift"
-          value="Morning (08:00 - 16:00)"
-          change="Room 402 - Wing A"
+          value={user?.shift || "Regular (09:00 - 17:00)"}
+          change={user?.roomNumber ? `Room ${user.roomNumber}` : "Main Clinic"}
           icon={Stethoscope}
           color="indigo"
         />
@@ -259,13 +259,13 @@ export const DoctorDashboard = () => {
               </div>
               <div>
                 <span style={{ fontSize: "0.75rem", color: "var(--slate-500)", fontWeight: 700 }}>BLOOD TYPE</span>
-                <p style={{ fontWeight: 700, color: "var(--rose-600)" }}>{viewingPatient.bloodGroup || "O+"}</p>
+                <p style={{ fontWeight: 700, color: "var(--rose-600)" }}>{viewingPatient.bloodGroup || "Not specified"}</p>
               </div>
             </div>
 
             <div style={{ padding: "12px", background: "#fef2f2", borderRadius: "var(--radius-md)", marginBottom: "16px" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--rose-600)", fontWeight: 700 }}>ALLERGIES</span>
-              <p style={{ fontWeight: 600, color: "#9f1239" }}>{viewingPatient.allergies || "None"}</p>
+              <p style={{ fontWeight: 600, color: "#9f1239" }}>{viewingPatient.allergies || "None specified"}</p>
             </div>
 
             <div style={{ marginBottom: "16px" }}>
@@ -273,19 +273,19 @@ export const DoctorDashboard = () => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginTop: "6px" }}>
                 <div style={{ padding: "8px", background: "var(--slate-50)", borderRadius: "var(--radius-sm)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>BP</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.bloodPressure || "120/80"}</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.bloodPressure || "N/A"}</div>
                 </div>
                 <div style={{ padding: "8px", background: "var(--slate-50)", borderRadius: "var(--radius-sm)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>HEART RATE</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.heartRate || "72 bpm"}</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.heartRate ? `${viewingPatient.vitals.heartRate} bpm` : "N/A"}</div>
                 </div>
                 <div style={{ padding: "8px", background: "var(--slate-50)", borderRadius: "var(--radius-sm)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>TEMP</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.temperature || "98.6 °F"}</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.temperature ? `${viewingPatient.vitals.temperature} °F` : "N/A"}</div>
                 </div>
                 <div style={{ padding: "8px", background: "var(--slate-50)", borderRadius: "var(--radius-sm)" }}>
                   <div style={{ fontSize: "0.6875rem", color: "var(--slate-400)" }}>SpO2</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.oxygenLevel || "99%"}</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.8125rem" }}>{viewingPatient.vitals?.oxygenLevel ? `${viewingPatient.vitals.oxygenLevel}%` : "N/A"}</div>
                 </div>
               </div>
             </div>
@@ -293,7 +293,7 @@ export const DoctorDashboard = () => {
             <div>
               <span style={{ fontSize: "0.75rem", color: "var(--slate-500)", fontWeight: 700 }}>PAST MEDICAL HISTORY</span>
               <p style={{ fontSize: "0.875rem", color: "var(--slate-700)", marginTop: "4px" }}>
-                {viewingPatient.history || "No significant prior surgeries recorded."}
+                {viewingPatient.history || "No prior clinical history recorded."}
               </p>
             </div>
           </div>

@@ -28,12 +28,6 @@ export const LoginPage = () => {
     }
   };
 
-  const fillDemoAccount = (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword("Password123!");
-    setError(null);
-  };
-
   return (
     <AuthLayout
       title="Welcome Back"
@@ -64,7 +58,7 @@ export const LoginPage = () => {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. sarah.mitchell@medicare.health"
+              placeholder="e.g. doctor@hospital.com"
               required
             />
           </div>
@@ -95,74 +89,15 @@ export const LoginPage = () => {
           className="btn btn-primary"
           style={{ width: "100%", marginTop: "12px", padding: "12px" }}
         >
-          {loading ? "Authenticating..." : "Sign In to Portal"} <ArrowRight size={16} />
+          {loading ? "Authenticating..." : "Login to Portal"} <ArrowRight size={16} />
         </button>
       </form>
-
-      {/* Recruiter / Evaluator Fast 1-Click Fillers */}
-      <div
-        style={{
-          marginTop: "24px",
-          padding: "16px",
-          background: "var(--slate-50)",
-          borderRadius: "var(--radius-lg)",
-          border: "1px solid var(--border-color)",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "0.6875rem",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            color: "var(--slate-500)",
-            display: "block",
-            marginBottom: "8px",
-          }}
-        >
-          Quick 1-Click Demo Personas:
-        </span>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-          <button
-            type="button"
-            onClick={() => fillDemoAccount("sarah.mitchell@medicare.health")}
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: "0.75rem" }}
-          >
-            🩺 Doctor
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoAccount("james.rodriguez@email.com")}
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: "0.75rem" }}
-          >
-            👤 Patient
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoAccount("alex.chen@medicare.health")}
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: "0.75rem" }}
-          >
-            💊 Pharmacist
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoAccount("elena.rostova@medicare.health")}
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: "0.75rem" }}
-          >
-            🛡️ Admin
-          </button>
-        </div>
-      </div>
 
       <div style={{ textAlign: "center", marginTop: "24px" }}>
         <p style={{ fontSize: "0.875rem", color: "var(--slate-600)" }}>
           Don't have an account yet?{" "}
           <Link to="/register" style={{ color: "var(--primary-600)", fontWeight: 700 }}>
-            Register New Account
+            Register
           </Link>
         </p>
       </div>
