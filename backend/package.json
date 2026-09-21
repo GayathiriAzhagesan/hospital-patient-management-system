@@ -1,0 +1,23 @@
+{
+  "name": "medicare-portal-backend",
+  "version": "1.0.0",
+  "description": "Production REST API for Medicare Portal Healthcare Management System",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node utils/seedData.js"
+  },
+  "keywords": ["healthcare", "patient-management", "express", "mongodb", "jwt", "rbac"],
+  "author": "Medicare Portal Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5"
+  }
+}

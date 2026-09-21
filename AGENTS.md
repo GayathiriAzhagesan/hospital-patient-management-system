@@ -1,10 +1,20 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Medicare Portal – Healthcare Management System
+
+## Project Overview
+
+A custom full-stack healthcare management system designed to digitize patient records and streamline healthcare workflows. The platform provides secure role-based access for Patients, Doctors, Pharmacists, and Administrators while ensuring efficient management of medical information.
+
+## Tech Stack
+
+- **Frontend**: React.js, TanStack Router, Tailwind CSS, Lucide Icons
+- **Backend Architecture**: Node.js, Express.js REST APIs
+- **Database**: MongoDB (Mongoose Schema Design)
+- **Security**: JWT Authentication (JSON Web Tokens), Role-Based Access Control (RBAC)
+- **API Testing & Verification**: Postman Automated Test Suites
+
+## Core Roles & Permissions
+
+1. **Patient**: Personal medical history, vitals log, prescription tracking, and appointment scheduling.
+2. **Doctor**: Patient consultation queue, clinical notes, EHR management, and digital prescription issuance.
+3. **Pharmacist**: Prescription fulfillment queue, dosage verification, and medicine dispensing logs.
+4. **Administrator**: System audit logs, staff and patient records, department occupancy, and billing analytics.
