@@ -66,12 +66,20 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     try {
       const data = await authService.register(userData);
+      if (data.pendingApproval) {
+        return {
+          success: true,
+          pendingApproval: true,
+          message: data.message,
+          user: data.user,
+        };
+      }
       if (data.success && data.token) {
         localStorage.setItem("medicare_token", data.token);
         localStorage.setItem("medicare_user", JSON.stringify(data.user));
         setToken(data.token);
         setUser(data.user);
-        return { success: true, user: data.user };
+        return { success: true, pendingApproval: false, user: data.user };
       }
       throw new Error(data.message || "Registration failed");
     } catch (err) {

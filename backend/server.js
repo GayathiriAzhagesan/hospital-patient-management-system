@@ -8,6 +8,7 @@ import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import { ensureAdminUser } from "./utils/initAdmin.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -65,6 +66,7 @@ app.use(errorHandler);
 // Start Server and connect to MongoDB
 const startServer = async () => {
   await connectDB();
+  await ensureAdminUser();
 
   app.listen(PORT, () => {
     console.log(`========================================================`);

@@ -1,5 +1,13 @@
 
 import mongoose from "mongoose";
+import dns from "node:dns";
+
+// Fix for Windows DNS resolving MongoDB Atlas SRV records
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {
+  // Ignore if cannot set
+}
 
 let isConnected = false;
 

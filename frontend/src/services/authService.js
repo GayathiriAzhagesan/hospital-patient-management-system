@@ -20,6 +20,21 @@ export const authService = {
     const response = await api.put("/auth/profile", data);
     return response.data;
   },
+
+  getPendingApprovals: async () => {
+    const response = await api.get("/auth/pending-approvals");
+    return response.data;
+  },
+
+  getAllUsers: async (params = {}) => {
+    const response = await api.get("/auth/users", { params });
+    return response.data;
+  },
+
+  updateUserStatus: async (id, status) => {
+    const response = await api.patch(`/auth/users/${id}/status`, { status });
+    return response.data;
+  },
 };
 
 export default authService;

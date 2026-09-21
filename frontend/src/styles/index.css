@@ -257,12 +257,12 @@ button {
   color: var(--blue-600);
   border: 1px solid #bfdbfe;
 }
-.badge-completed, .badge-paid, .badge-dispensed {
+.badge-completed, .badge-paid, .badge-dispensed, .badge-approved {
   background: #ecfdf5;
   color: var(--emerald-600);
   border: 1px solid #a7f3d0;
 }
-.badge-cancelled, .badge-overdue {
+.badge-cancelled, .badge-overdue, .badge-rejected {
   background: #fef2f2;
   color: var(--rose-600);
   border: 1px solid #fecdd3;
@@ -396,6 +396,12 @@ button {
 }
 
 /* Grid & Layout Utilities */
+.grid-cols-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
 .grid-cols-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -414,11 +420,118 @@ button {
   gap: 20px;
 }
 
+@media (max-width: 1280px) {
+  .grid-cols-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 1024px) {
+  .grid-cols-5 { grid-template-columns: repeat(2, 1fr); }
   .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
-  .grid-cols-4, .grid-cols-3, .grid-cols-2 { grid-template-columns: 1fr; }
+  .grid-cols-5, .grid-cols-4, .grid-cols-3, .grid-cols-2 { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   Healthcare Modern Portal – Visual Aesthetics & Animations
+   ========================================================================== */
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+  }
+  50% {
+    box-shadow: 0 15px 35px -5px rgba(6, 182, 212, 0.4);
+  }
+}
+
+.animate-float {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatReverse 6s ease-in-out infinite 1s;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* Medical Hero Gradients & Background Mesh */
+.bg-medical-mesh {
+  background: radial-gradient(circle at 10% 20%, rgba(224, 242, 254, 0.7) 0%, transparent 40%),
+              radial-gradient(circle at 90% 10%, rgba(204, 251, 241, 0.6) 0%, transparent 45%),
+              radial-gradient(circle at 50% 80%, rgba(240, 249, 255, 0.8) 0%, transparent 50%),
+              #ffffff;
+}
+
+.bg-cyan-glow {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%);
+}
+
+.glass-badge {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+}
+
+.service-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  border-color: #38bdf8;
+  box-shadow: 0 16px 32px -8px rgba(2, 132, 199, 0.12);
+}
+
+.doctor-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+}
+
+.doctor-card:hover {
+  transform: translateY(-5px);
+  border-color: #0284c7;
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.12);
+}
+
+@media (min-width: 840px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+}
+
+

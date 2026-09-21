@@ -30,6 +30,13 @@ const UserSchema = new mongoose.Schema(
       default: "Patient",
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: function () {
+        return this.role === "Patient" || this.role === "Admin" ? "approved" : "pending";
+      },
+    },
     avatar: {
       type: String,
       default: "",

@@ -36,13 +36,15 @@ export const LoginPage = () => {
       {(error || authError) && (
         <div
           style={{
-            padding: "10px 14px",
-            background: "#fef2f2",
-            border: "1px solid #fecdd3",
+            padding: "12px 16px",
+            background: (error || authError).toLowerCase().includes("awaiting") ? "#fffbeb" : "#fef2f2",
+            border: `1px solid ${(error || authError).toLowerCase().includes("awaiting") ? "#fde68a" : "#fecdd3"}`,
             borderRadius: "var(--radius-md)",
-            color: "var(--rose-600)",
+            color: (error || authError).toLowerCase().includes("awaiting") ? "#b45309" : "var(--rose-600)",
             fontSize: "0.875rem",
             marginBottom: "20px",
+            fontWeight: 500,
+            lineHeight: 1.5,
           }}
         >
           {error || authError}
