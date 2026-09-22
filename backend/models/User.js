@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Doctor", "Patient", "Pharmacist", "Admin"],
+      enum: ["Doctor", "Patient", "Pharmacist", "Admin", "doctor", "patient", "pharmacist", "admin"],
       default: "Patient",
       required: true,
     },
@@ -34,7 +34,15 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: function () {
-        return this.role === "Patient" || this.role === "Admin" ? "approved" : "pending";
+        const r = (this.role || "").toLowerCase();
+        return r === "patient" || r === "admin" ? "approved" : "pending";
+      },
+    },
+    approved: {
+      type: Boolean,
+      default: function () {
+        const r = (this.role || "").toLowerCase();
+        return r === "patient" || r === "admin";
       },
     },
     avatar: {
@@ -52,6 +60,47 @@ const UserSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: "",
+    },
+    // Clinical & Professional Credential Fields
+    specialization: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    qualification: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    licenseNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    experience: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    hospitalClinic: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    pharmacyName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    pharmacyAddress: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    rejectionReason: {
+      type: String,
+      default: "",
+      trim: true,
     },
   },
   {

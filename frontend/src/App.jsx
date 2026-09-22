@@ -35,7 +35,9 @@ export const App = () => {
           {/* Public Pages */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/:role" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/:role" element={<RegisterPage />} />
 
           {/* Protected Clinical Applications (MainLayout) */}
           <Route element={<ProtectedRoute />}>

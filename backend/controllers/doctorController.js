@@ -1,27 +1,49 @@
 import Doctor from "../models/Doctor.js";
+import User from "../models/User.js";
 
 // @desc    Get all doctors
 // @route   GET /api/doctors
 // @access  Public / Private
 export const getDoctors = async (req, res, next) => {
   try {
-    const { specialty, department, search } = req.query;
-    let query = {};
+    const { specialty, department, search, status } = req.query;
+    let conditions = [];
 
     if (specialty) {
-      query.specialty = new RegExp(specialty, "i");
+      conditions.push({ specialty: new RegExp(specialty, "i") });
     }
     if (department) {
-      query.department = new RegExp(department, "i");
+      conditions.push({ department: new RegExp(department, "i") });
+    }
+    if (status && status !== "all") {
+      const s = status.toLowerCase();
+      if (s === "pending") {
+        conditions.push({ $or: [{ status: "pending" }, { approved: false }] });
+      } else if (s === "approved") {
+        conditions.push({ $or: [{ status: "approved" }, { approved: true }, { status: { $exists: false } }] });
+      } else {
+        conditions.push({ status: s });
+      }
     }
     if (search) {
       const searchRegex = new RegExp(search, "i");
-      query.$or = [
-        { name: searchRegex },
-        { specialty: searchRegex },
-        { department: searchRegex },
-      ];
+      conditions.push({
+        $or: [
+          { name: searchRegex },
+          { specialty: searchRegex },
+          { department: searchRegex },
+          { email: searchRegex },
+          { licenseNumber: searchRegex },
+        ],
+      });
     }
+
+    const query =
+      conditions.length > 0
+        ? conditions.length === 1
+          ? conditions[0]
+          : { $and: conditions }
+        : {};
 
     const doctors = await Doctor.find(query).sort({ name: 1 });
 
@@ -171,23 +193,50 @@ export const updateDoctor = async (req, res, next) => {
   }
 };
 
-// @desc    Delete doctor profile
+// @desc    Delete doctor profile & account
 // @route   DELETE /api/doctors/:id
 // @access  Private (Admin)
 export const deleteDoctor = async (req, res, next) => {
   try {
-    const doctor = await Doctor.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
-    if (!doctor) {
+    // 1. Try finding in Doctor collection
+    let doctor = await Doctor.findById(id);
+    let userId = null;
+    let doctorEmail = null;
+
+    if (doctor) {
+      userId = doctor.userId;
+      doctorEmail = doctor.email;
+      await Doctor.findByIdAndDelete(doctor._id);
+    } else {
+      // 2. Check if id is a User ID for a Doctor
+      const user = await User.findById(id);
+      if (user && (user.role || "").toLowerCase() === "doctor") {
+        userId = user._id;
+        doctorEmail = user.email;
+      }
+    }
+
+    // Permanently remove User authentication record so doctor cannot log in
+    if (userId) {
+      await User.findByIdAndDelete(userId);
+    }
+    if (doctorEmail) {
+      await User.deleteMany({ email: doctorEmail.toLowerCase() });
+      await Doctor.deleteMany({ email: doctorEmail.toLowerCase() });
+    }
+
+    if (!doctor && !userId) {
       return res.status(404).json({
         success: false,
-        message: "Doctor not found.",
+        message: "Doctor account not found.",
       });
     }
 
     res.json({
       success: true,
-      message: "Doctor profile removed successfully",
+      message: "Doctor account and credentials permanently removed from the system.",
     });
   } catch (error) {
     next(error);

@@ -5,9 +5,27 @@ import generateToken from "../utils/generateToken.js";
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
+// @desc    Register a new user
+// @route   POST /api/auth/register
+// @access  Public
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, role = "Patient", department, title, phone } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role = "Patient",
+      department,
+      title,
+      phone,
+      specialization,
+      qualification,
+      licenseNumber,
+      experience,
+      hospitalClinic,
+      pharmacyName,
+      pharmacyAddress,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -17,19 +35,48 @@ export const registerUser = async (req, res, next) => {
     }
 
     // 1. Enforce Role Validation & Disallow Admin Registration via UI
-    if (role === "Admin") {
+    const normalizedRoleInput = (role || "Patient").trim().toLowerCase();
+    if (normalizedRoleInput === "admin") {
       return res.status(403).json({
         success: false,
         message: "Administrator accounts cannot be created through public registration.",
       });
     }
 
-    const allowedRoles = ["Patient", "Doctor", "Pharmacist"];
-    if (!allowedRoles.includes(role)) {
+    const roleMap = {
+      patient: "Patient",
+      doctor: "Doctor",
+      pharmacist: "Pharmacist",
+    };
+
+    const canonicalRole = roleMap[normalizedRoleInput];
+    if (!canonicalRole) {
       return res.status(400).json({
         success: false,
-        message: `Invalid role specified. Allowed roles: ${allowedRoles.join(", ")}`,
+        message: "Invalid role specified. Allowed roles: Patient, Doctor, Pharmacist",
       });
+    }
+
+    // Validate role-specific required information
+    if (canonicalRole === "Doctor") {
+      const docSpec = specialization || department;
+      if (!phone || !docSpec || !qualification || !licenseNumber || !experience || !hospitalClinic) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Please provide all required doctor credentials: Phone, Specialization, Qualification, Medical License Number, Years of Experience, and Hospital / Clinic.",
+        });
+      }
+    }
+
+    if (canonicalRole === "Pharmacist") {
+      if (!phone || !pharmacyName || !pharmacyAddress || !licenseNumber || !qualification || !experience) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Please provide all required pharmacist credentials: Phone, Pharmacy Name, Pharmacy Address, Pharmacist License Number, Qualification, and Years of Experience.",
+        });
+      }
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -44,50 +91,73 @@ export const registerUser = async (req, res, next) => {
 
     // 2. Determine Approval Status
     // Patients are automatically approved; Doctors and Pharmacists require Admin review
-    const status = role === "Patient" ? "approved" : "pending";
+    const status = canonicalRole === "Patient" ? "approved" : "pending";
+
+    const assignedDepartment =
+      specialization ||
+      department ||
+      (canonicalRole === "Doctor"
+        ? "General Medicine"
+        : canonicalRole === "Pharmacist"
+        ? "Central Pharmacy"
+        : "General Healthcare");
+
+    const assignedTitle =
+      title ||
+      (canonicalRole === "Doctor"
+        ? "Dr."
+        : canonicalRole === "Pharmacist"
+        ? "Pharmacist"
+        : "Patient Member");
 
     const user = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password,
-      role,
+      role: canonicalRole,
       status,
-      department:
-        department ||
-        (role === "Doctor"
-          ? "General Medicine"
-          : role === "Pharmacist"
-          ? "Central Pharmacy"
-          : "General Healthcare"),
-      title: title || `${role} Member`,
+      department: assignedDepartment,
+      title: assignedTitle,
       phone: phone || "",
+      specialization: specialization || department || "",
+      qualification: qualification || "",
+      licenseNumber: licenseNumber || "",
+      experience: experience || "",
+      hospitalClinic: hospitalClinic || "",
+      pharmacyName: pharmacyName || "",
+      pharmacyAddress: pharmacyAddress || "",
     });
 
-    // 3. For Doctors, pre-create the doctor directory profile so specialty/shift are ready upon approval
-    if (role === "Doctor") {
-      try {
-        await Doctor.create({
-          userId: user._id,
-          name: user.name,
-          email: user.email,
-          specialty: department || "General Medicine",
-          department: department || "Outpatient Department",
-          phone: phone || "",
-          shift: "Morning",
-          roomNumber: "Consultation Room",
-        });
-      } catch (docErr) {
-        console.warn("Notice: Doctor profile pre-creation deferred:", docErr.message);
-      }
-    }
-
-    // 4. Response handling based on approval state
+    // 3. Response handling based on approval state
     if (status === "pending") {
+      // If doctor, also create linked Doctor profile with status pending
+      if (canonicalRole === "Doctor") {
+        try {
+          await Doctor.create({
+            userId: user._id,
+            name: user.name.startsWith("Dr.") ? user.name : `Dr. ${user.name}`,
+            email: user.email,
+            specialty: user.specialization || user.department || "General Medicine",
+            department: user.hospitalClinic || user.department || "Outpatient Department",
+            phone: user.phone || "",
+            shift: "Morning",
+            roomNumber: "Consultation Room",
+            qualifications: user.qualification || "MD, MBBS",
+            avatar: user.avatar || "",
+            licenseNumber: user.licenseNumber || "",
+            status: "pending",
+            approved: false,
+          });
+        } catch (docErr) {
+          console.warn("Doctor profile creation sync warning:", docErr.message);
+        }
+      }
+
       return res.status(201).json({
         success: true,
         pendingApproval: true,
         message:
-          "Registration submitted successfully. Your account is awaiting administrator approval before you can log in.",
+          "Registration successful. Your account is pending Admin approval. You will be able to log in after your account has been approved.",
         token: null,
         user: {
           id: user._id,
@@ -97,6 +167,14 @@ export const registerUser = async (req, res, next) => {
           status: user.status,
           title: user.title,
           department: user.department,
+          specialization: user.specialization,
+          qualification: user.qualification,
+          licenseNumber: user.licenseNumber,
+          experience: user.experience,
+          hospitalClinic: user.hospitalClinic,
+          pharmacyName: user.pharmacyName,
+          pharmacyAddress: user.pharmacyAddress,
+          phone: user.phone,
         },
       });
     }
@@ -118,6 +196,7 @@ export const registerUser = async (req, res, next) => {
         avatar: user.avatar,
         title: user.title,
         department: user.department,
+        phone: user.phone,
       },
     });
   } catch (error) {
@@ -130,7 +209,7 @@ export const registerUser = async (req, res, next) => {
 // @access  Public
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -157,25 +236,58 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
-    // Check account approval status
-    if (user.status === "pending") {
+    // Role verification (if role is specified by login endpoint / portal context)
+    if (role && (user.role || "").toLowerCase() !== role.trim().toLowerCase()) {
       return res.status(403).json({
         success: false,
-        status: "pending",
-        message: "Your account is awaiting administrator approval.",
+        message: `Account role mismatch. You are registered as a ${user.role}. Please log in using the correct portal.`,
       });
     }
 
-    if (user.status === "rejected") {
-      return res.status(403).json({
-        success: false,
-        status: "rejected",
-        message:
-          "Your registration request has been rejected by the administrator. Please contact hospital administration.",
-      });
+    // Clinical staff (Doctor and Pharmacist) must have 'approved' status
+    const isClinicalStaff =
+      (user.role || "").toLowerCase() === "doctor" ||
+      (user.role || "").toLowerCase() === "pharmacist";
+
+    if (isClinicalStaff) {
+      // Safe fallback for pre-existing accounts without explicit status field
+      const effectiveStatus = user.status || (user.approved === false ? "pending" : "approved");
+
+      if (effectiveStatus === "pending") {
+        return res.status(403).json({
+          success: false,
+          status: "pending",
+          message: "Your account is awaiting administrator approval.",
+        });
+      }
+
+      if (effectiveStatus === "rejected") {
+        return res.status(403).json({
+          success: false,
+          status: "rejected",
+          message: "Your registration has been rejected. Contact administrator.",
+          rejectionReason: user.rejectionReason || null,
+        });
+      }
+    } else {
+      // For any other account explicitly pending or rejected
+      if (user.status === "pending") {
+        return res.status(403).json({
+          success: false,
+          status: "pending",
+          message: "Your account is awaiting administrator approval.",
+        });
+      }
+      if (user.status === "rejected") {
+        return res.status(403).json({
+          success: false,
+          status: "rejected",
+          message: "Your registration has been rejected. Contact administrator.",
+        });
+      }
     }
 
-    // User is approved -> generate token and log in
+    // User is authorized and approved -> generate token and log in
     const token = generateToken(user);
 
     return res.json({
@@ -187,10 +299,18 @@ export const loginUser = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        status: user.status,
+        status: user.status || "approved",
         avatar: user.avatar,
         title: user.title,
         department: user.department,
+        specialization: user.specialization,
+        qualification: user.qualification,
+        licenseNumber: user.licenseNumber,
+        experience: user.experience,
+        hospitalClinic: user.hospitalClinic,
+        pharmacyName: user.pharmacyName,
+        pharmacyAddress: user.pharmacyAddress,
+        phone: user.phone,
       },
     });
   } catch (error) {
@@ -259,12 +379,30 @@ export const updateProfile = async (req, res, next) => {
 // @access  Private (Admin)
 export const getPendingApprovals = async (_req, res, next) => {
   try {
-    const pendingUsers = await User.find({ status: "pending" })
+    const pendingUsers = await User.find({
+      $and: [
+        {
+          role: { $in: ["Doctor", "doctor", "Pharmacist", "pharmacist"] },
+        },
+        {
+          $or: [
+            { status: "pending" },
+            { approved: false },
+            { status: { $exists: false } },
+            { status: null },
+          ],
+        },
+      ],
+    })
       .select("-password")
       .sort({ createdAt: -1 });
 
-    const pendingDoctors = pendingUsers.filter((u) => u.role === "Doctor");
-    const pendingPharmacists = pendingUsers.filter((u) => u.role === "Pharmacist");
+    const pendingDoctors = pendingUsers.filter(
+      (u) => (u.role || "").toLowerCase() === "doctor"
+    );
+    const pendingPharmacists = pendingUsers.filter(
+      (u) => (u.role || "").toLowerCase() === "pharmacist"
+    );
 
     res.json({
       success: true,
@@ -284,15 +422,43 @@ export const getPendingApprovals = async (_req, res, next) => {
 export const getAllUsers = async (req, res, next) => {
   try {
     const { role, status, search } = req.query;
-    let filter = {};
-    if (role) filter.role = role;
-    if (status) filter.status = status;
-    if (search) {
-      filter.$or = [
-        { name: new RegExp(search, "i") },
-        { email: new RegExp(search, "i") },
-      ];
+    let conditions = [];
+
+    if (role && role !== "all") {
+      conditions.push({ role: new RegExp(`^${role}$`, "i") });
     }
+
+    if (status && status !== "all") {
+      const s = status.toLowerCase();
+      if (s === "pending") {
+        conditions.push({ $or: [{ status: "pending" }, { approved: false }] });
+      } else if (s === "approved") {
+        conditions.push({ $or: [{ status: "approved" }, { approved: true }, { status: { $exists: false } }] });
+      } else {
+        conditions.push({ status: s });
+      }
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      conditions.push({
+        $or: [
+          { name: searchRegex },
+          { email: searchRegex },
+          { licenseNumber: searchRegex },
+          { hospitalClinic: searchRegex },
+          { pharmacyName: searchRegex },
+          { specialization: searchRegex },
+        ],
+      });
+    }
+
+    const filter =
+      conditions.length > 0
+        ? conditions.length === 1
+          ? conditions[0]
+          : { $and: conditions }
+        : {};
 
     const users = await User.find(filter)
       .select("-password")
@@ -313,7 +479,7 @@ export const getAllUsers = async (req, res, next) => {
 // @access  Private (Admin)
 export const updateUserStatus = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, rejectionReason } = req.body;
     const { id } = req.params;
 
     if (!["approved", "rejected", "pending"].includes(status)) {
@@ -332,7 +498,7 @@ export const updateUserStatus = async (req, res, next) => {
     }
 
     // Prevent modifying Admin status
-    if (targetUser.role === "Admin" && status !== "approved") {
+    if ((targetUser.role || "").toLowerCase() === "admin" && status !== "approved") {
       return res.status(403).json({
         success: false,
         message: "Cannot revoke Administrator status.",
@@ -340,22 +506,60 @@ export const updateUserStatus = async (req, res, next) => {
     }
 
     targetUser.status = status;
+    targetUser.approved = status === "approved";
+    if (status === "rejected") {
+      targetUser.rejectionReason = rejectionReason ? rejectionReason.trim() : "";
+    } else if (status === "approved") {
+      targetUser.rejectionReason = "";
+    }
+
     await targetUser.save();
 
-    // If user is a Doctor and approved, ensure Doctor record exists
-    if (targetUser.role === "Doctor" && status === "approved") {
-      let doc = await Doctor.findOne({ userId: targetUser._id });
-      if (!doc) {
-        await Doctor.create({
-          userId: targetUser._id,
-          name: targetUser.name,
-          email: targetUser.email,
-          specialty: targetUser.department || "General Medicine",
-          department: targetUser.department || "Outpatient Department",
-          phone: targetUser.phone || "",
-          shift: "Morning",
-          roomNumber: "Consultation Room",
-        });
+    // If user is a Doctor, sync Doctor record in directory
+    if ((targetUser.role || "").toLowerCase() === "doctor") {
+      let doc = await Doctor.findOne({
+        $or: [{ userId: targetUser._id }, { email: targetUser.email.toLowerCase() }],
+      });
+
+      if (status === "approved") {
+        if (!doc) {
+          await Doctor.create({
+            userId: targetUser._id,
+            name: targetUser.name.startsWith("Dr.") ? targetUser.name : `Dr. ${targetUser.name}`,
+            email: targetUser.email.toLowerCase(),
+            specialty: targetUser.specialization || targetUser.department || "General Medicine",
+            department: targetUser.hospitalClinic || targetUser.department || "Outpatient Department",
+            phone: targetUser.phone || "",
+            shift: "Morning",
+            roomNumber: "Consultation Room",
+            qualifications: targetUser.qualification || "MD, MBBS",
+            avatar: targetUser.avatar || "",
+            licenseNumber: targetUser.licenseNumber || "",
+            status: "approved",
+            approved: true,
+          });
+        } else {
+          doc.status = "approved";
+          doc.approved = true;
+          doc.userId = targetUser._id;
+          if (targetUser.phone) doc.phone = targetUser.phone;
+          if (targetUser.specialization) doc.specialty = targetUser.specialization;
+          if (targetUser.qualification) doc.qualifications = targetUser.qualification;
+          if (targetUser.licenseNumber) doc.licenseNumber = targetUser.licenseNumber;
+          await doc.save();
+        }
+      } else if (status === "rejected") {
+        if (doc) {
+          doc.status = "rejected";
+          doc.approved = false;
+          await doc.save();
+        }
+      } else if (status === "pending") {
+        if (doc) {
+          doc.status = "pending";
+          doc.approved = false;
+          await doc.save();
+        }
       }
     }
 
@@ -368,9 +572,65 @@ export const updateUserStatus = async (req, res, next) => {
         email: targetUser.email,
         role: targetUser.role,
         status: targetUser.status,
+        rejectionReason: targetUser.rejectionReason,
       },
     });
   } catch (error) {
     next(error);
   }
 };
+
+// @desc    Delete user account (Doctor, Pharmacist, Patient)
+// @route   DELETE /api/auth/users/:id
+// @access  Private (Admin)
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      // Check if id is a Doctor ID
+      const doc = await Doctor.findById(id);
+      if (doc) {
+        if (doc.userId) {
+          await User.findByIdAndDelete(doc.userId);
+        }
+        await User.deleteMany({ email: doc.email.toLowerCase() });
+        await Doctor.findByIdAndDelete(id);
+        return res.json({
+          success: true,
+          message: "Doctor account deleted successfully.",
+        });
+      }
+
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    if ((user.role || "").toLowerCase() === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot delete Administrator accounts.",
+      });
+    }
+
+    // If deleting a doctor, also remove Doctor profile and any duplicate matches
+    if ((user.role || "").toLowerCase() === "doctor") {
+      await Doctor.deleteMany({
+        $or: [{ userId: user._id }, { email: user.email.toLowerCase() }],
+      });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: `Account for '${user.name}' has been deleted successfully.`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

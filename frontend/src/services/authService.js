@@ -31,8 +31,13 @@ export const authService = {
     return response.data;
   },
 
-  updateUserStatus: async (id, status) => {
-    const response = await api.patch(`/auth/users/${id}/status`, { status });
+  updateUserStatus: async (id, status, rejectionReason = "") => {
+    const response = await api.patch(`/auth/users/${id}/status`, { status, rejectionReason });
+    return response.data;
+  },
+
+  deleteUser: async (id) => {
+    const response = await api.delete(`/auth/users/${id}`);
     return response.data;
   },
 };

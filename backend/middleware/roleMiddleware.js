@@ -7,7 +7,10 @@ export const authorizeRoles = (...allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRole = (req.user.role || "").toLowerCase();
+    const normalizedAllowed = allowedRoles.map((r) => (r || "").toLowerCase());
+
+    if (!normalizedAllowed.includes(userRole)) {
       return res.status(403).json({
         success: false,
         message: `Forbidden: Role '${req.user.role}' is not authorized to access this resource. Allowed roles: ${allowedRoles.join(", ")}`,

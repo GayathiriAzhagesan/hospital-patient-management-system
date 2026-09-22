@@ -7,6 +7,7 @@ import {
   getPendingApprovals,
   getAllUsers,
   updateUserStatus,
+  deleteUser,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
@@ -25,5 +26,6 @@ router.put("/profile", protect, updateProfile);
 router.get("/pending-approvals", protect, authorizeRoles("Admin"), getPendingApprovals);
 router.get("/users", protect, authorizeRoles("Admin"), getAllUsers);
 router.patch("/users/:id/status", protect, authorizeRoles("Admin"), updateUserStatus);
+router.delete("/users/:id", protect, authorizeRoles("Admin"), deleteUser);
 
 export default router;

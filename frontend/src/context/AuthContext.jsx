@@ -43,10 +43,12 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, role = null) => {
     setAuthError(null);
     try {
-      const data = await authService.login({ email, password });
+      const payload = { email, password };
+      if (role) payload.role = role;
+      const data = await authService.login(payload);
       if (data.success && data.token) {
         localStorage.setItem("medicare_token", data.token);
         localStorage.setItem("medicare_user", JSON.stringify(data.user));
@@ -58,7 +60,12 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const msg = err.response?.data?.message || err.message || "Failed to sign in";
       setAuthError(msg);
-      return { success: false, error: msg };
+      return {
+        success: false,
+        error: msg,
+        status: err.response?.data?.status || null,
+        rejectionReason: err.response?.data?.rejectionReason || null,
+      };
     }
   };
 

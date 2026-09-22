@@ -38,6 +38,14 @@ export const ProtectedRoute = ({ allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Doctor Login Protection: Only approved doctors can access the doctor dashboard
+  if (
+    (user.role || "").toLowerCase() === "doctor" &&
+    (user.status === "pending" || user.status === "rejected" || user.approved === false)
+  ) {
+    return <Navigate to="/login/doctor" replace />;
+  }
+
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
       <div style={{ padding: "40px 20px", textAlign: "center" }}>
