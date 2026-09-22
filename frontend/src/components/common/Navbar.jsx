@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { LogOut, Bell, HeartPulse, User } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 
-export const Navbar = ({ onToggleSidebar }) => {
+export const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -29,22 +29,33 @@ export const Navbar = ({ onToggleSidebar }) => {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        {/* 3-line Hamburger Menu Icon (☰) - Always visible on desktop and mobile */}
         <button
           onClick={onToggleSidebar}
           style={{
             display: "inline-flex",
             alignItems: "center",
-            padding: "8px",
-            color: "var(--slate-600)",
+            justifyContent: "center",
+            width: "40px",
+            height: "40px",
+            color: isSidebarOpen ? "var(--primary-600)" : "var(--slate-700)",
+            background: isSidebarOpen ? "var(--primary-50)" : "#ffffff",
+            border: "1px solid",
+            borderColor: isSidebarOpen ? "var(--primary-300)" : "var(--border-color)",
             borderRadius: "var(--radius-sm)",
+            cursor: "pointer",
+            transition: "all var(--transition-fast)",
+            padding: 0,
           }}
-          className="lg-hidden"
-          aria-label="Toggle Menu"
+          aria-label={isSidebarOpen ? "Close Healthcare Navigation" : "Open Healthcare Navigation"}
+          title={isSidebarOpen ? "Close Menu" : "Healthcare Navigation (☰)"}
+          id="healthcare-hamburger-btn"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="18" x2="21" y2="18" />
+          {/* 3-line hamburger menu icon (☰) */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3.5" y1="6" x2="20.5" y2="6" />
+            <line x1="3.5" y1="12" x2="20.5" y2="12" />
+            <line x1="3.5" y1="18" x2="20.5" y2="18" />
           </svg>
         </button>
 

@@ -8,19 +8,23 @@ export const MainLayout = () => {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg-main)" }}>
-      <Navbar onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
+      <Navbar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+      />
       
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, position: "relative", width: "100%" }}>
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
         <main
           style={{
             flex: 1,
-            padding: "32px",
+            padding: "28px 32px",
             overflowY: "auto",
-            maxWidth: "1400px",
+            maxWidth: "1440px",
             margin: "0 auto",
             width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <Outlet />
