@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Sidebar from "../../components/common/Sidebar";
 import {
   HeartPulse,
   ShieldCheck,
@@ -33,6 +34,7 @@ export const LandingPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const doctorsDirectory = [
     {
@@ -186,11 +188,14 @@ export const LandingPage = () => {
         </div>
       </div>
 
+      {/* Off-canvas Healthcare Navigation Drawer (Hidden by default) */}
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
       {/* Navigation Header */}
       <header
         style={{
           borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
-          padding: "16px 36px",
+          padding: "16px 28px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -202,8 +207,39 @@ export const LandingPage = () => {
           boxShadow: "0 2px 8px -2px rgba(15, 23, 42, 0.05)",
         }}
       >
-        {/* Brand Logo */}
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* 3-line Hamburger Menu Icon (☰) - Toggles Healthcare Navigation */}
+          <button
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              color: isSidebarOpen ? "var(--primary-600)" : "var(--slate-700)",
+              background: isSidebarOpen ? "var(--primary-50)" : "#ffffff",
+              border: "1px solid",
+              borderColor: isSidebarOpen ? "var(--primary-300)" : "var(--border-color)",
+              borderRadius: "var(--radius-sm)",
+              cursor: "pointer",
+              transition: "all var(--transition-fast)",
+              padding: 0,
+            }}
+            aria-label={isSidebarOpen ? "Close Healthcare Navigation" : "Open Healthcare Navigation"}
+            title={isSidebarOpen ? "Close Menu" : "Healthcare Navigation (☰)"}
+            id="healthcare-hamburger-btn"
+          >
+            {/* 3-line hamburger menu icon (☰) */}
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3.5" y1="6" x2="20.5" y2="6" />
+              <line x1="3.5" y1="12" x2="20.5" y2="12" />
+              <line x1="3.5" y1="18" x2="20.5" y2="18" />
+            </svg>
+          </button>
+
+          {/* Brand Logo */}
+          <Link to="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
           <div
             style={{
               width: "44px",
@@ -242,6 +278,7 @@ export const LandingPage = () => {
             </p>
           </div>
         </Link>
+        </div>
 
         {/* Quick Nav Anchors */}
         <nav style={{ display: "none", alignItems: "center", gap: "28px" }} className="desktop-nav">
